@@ -1,0 +1,17 @@
+.*
+
+# Folder with compiled python modules
+**/__pycache__*
+
+# Setuptools distribution folder.
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info
+
+# Actual config file
+config.yaml
+
+# Don't ignore this file
+!.gitignore
+

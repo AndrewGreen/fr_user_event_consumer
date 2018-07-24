@@ -1,0 +1,116 @@
+#!/usr/bin/python3
+
+import argparse
+
+from fr_user_event_consumer import config, setup_logging
+from fr_user_event_consumer.central_notice_consumer_controller import CentralNoticeConsumerController
+
+# Entry point
+if __name__ == '__main__':
+
+    # Set up command-line arguments
+    parser = argparse.ArgumentParser(
+        description =
+            """Read CentralNotice event log files, aggregate and store in database.
+            Note: log filenames must be globally unique across all logs consumed by
+            fr_user_event_consumer scripts. Regardless of the options selected, events
+            will only be consumed from files that have not been marked as already
+            processed."""
+    )
+
+    parser.add_argument(
+        '-d',
+        '--directory',
+        help =
+            """Directory to read log files from. Files in sub-directories will also be
+            consumed. (Defaults to the directory set in the configuration file.)"""
+    )
+
+    # Group requires one of: --file-glob, --since-last-consumed or --last-hours
+
+    files_grp = parser.add_mutually_exclusive_group( required = True )
+
+    files_grp.add_argument(
+        '-f',
+        '--file-glob',
+        help =
+            """Filename or glob to select log file(s) with events to consume. Filenames
+            ending in '.gz' are assumed to be compressed with gzip.This option may not be
+            used with --since-last-consumed or --last-hours.""",
+        dest = 'file_glob'
+    )
+
+    files_grp.add_argument(
+        '-s',
+        '--since-last-consumed',
+        help =
+            """Process files for times since the most recent events consumed. Filenames
+            must follow the filename formatter set in the configuration file. This option
+            may not be used with --file or --last-hours.""",
+        dest = 'since_last',
+        action = 'store_true'
+    )
+
+    files_grp.add_argument(
+        '-l',
+        '--last-hours',
+        help =
+            """Process files from the last n hours. Filenames must follow the filename
+            formatter set in the configuration file. This option may not be used with
+            --since-last-consumed or --file.""",
+        dest = 'last_hours',
+        type = int
+    )
+
+    parser.add_argument(
+        '-c',
+        '--config',
+        help =
+            """Configuration file to use. (Without this option, the script looks for a
+            configuraiton file in the working directory and in
+            /etc/fr_user_event_consumer/.)"""
+    )
+
+    parser.add_argument(
+        '--debug',
+        help = 'Output debugging info to stderr.',
+        action = 'store_true'
+    )
+
+    parser.add_argument(
+        '--dry-run',
+        help =
+            """Read files and events, but do not write any data to the database. Instead,
+            output to stdout the SQL that would be executed to write the data.""",
+        action = 'store_true'
+    )
+
+    args = parser.parse_args()
+
+    config.filename = args.config # None if the command-line option is not set
+    cfg = config.get()
+
+    setup_logging( args.debug )
+
+    controller = CentralNoticeConsumerController(
+        directory = args.directory or cfg[ 'central_notice_log_file_directory' ],
+        filename_formatter = cfg[ 'central_notice_log_filename_formatter' ],
+        file_glob = args.file_glob,
+        since_last = args.since_last,
+        last_hours = args.last_hours
+    )
+
+    controller.execute()
+
+
+
+# readme DONE!
+# comments in yaml  DONE!
+# kwargs DONE!
+# file glob DONE!
+# file names must be unique DONE!
+# recent
+# since
+# create_tables.sql
+# pass db connection around
+# test data

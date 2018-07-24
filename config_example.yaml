@@ -1,0 +1,8 @@
+database:
+  name: 'fr_user_event_consumer_testing'
+  password: 'pw'
+  user: 'user'
+
+central_notice_log_file_directory: '/path/to/cn_log_files/'
+landing_page_log_file_directory: '/path/to/lp_log_files/'
+landing_page_ingress_max_batch_size: 1500

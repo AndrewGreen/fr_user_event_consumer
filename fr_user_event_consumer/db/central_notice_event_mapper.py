@@ -1,0 +1,2 @@
+class CentralNoticeEventMapper:
+    pass
