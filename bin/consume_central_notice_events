@@ -15,7 +15,8 @@ if __name__ == '__main__':
             Note: log filenames must be globally unique across all logs consumed by
             fr_user_event_consumer scripts. Regardless of the options selected, events
             will only be consumed from files that have not been marked as already
-            processed."""
+            processed.
+            """
     )
 
     parser.add_argument(
@@ -26,40 +27,40 @@ if __name__ == '__main__':
             consumed. (Defaults to the directory set in the configuration file.)"""
     )
 
-    # Group requires one of: --file-glob, --since-last-consumed or --last-hours
-
-    files_grp = parser.add_mutually_exclusive_group( required = True )
-
-    files_grp.add_argument(
-        '-f',
+    parser.add_argument(
         '--file-glob',
         help =
-            """Filename or glob to select log file(s) with events to consume. Filenames
-            ending in '.gz' are assumed to be compressed with gzip.This option may not be
-            used with --since-last-consumed or --last-hours.""",
+            """Filename or glob to select log file(s) with events to consume. If not
+            specified, defaults to central_notice_filename_glob set in the configuration
+            file. Filenames ending in '.gz' are assumed to be compressed with gzip.""",
         dest = 'file_glob'
     )
 
-    files_grp.add_argument(
-        '-s',
-        '--since-last-consumed',
+    since_grp = parser.add_mutually_exclusive_group()
+
+    since_grp.add_argument(
+        '--from-latest-consumed',
         help =
-            """Process files for times since the most recent events consumed. Filenames
-            must follow the filename formatter set in the configuration file. This option
-            may not be used with --file or --last-hours.""",
-        dest = 'since_last',
-        action = 'store_true'
+            """Process files for times from the most recent events consumed. May not be
+            used with the --from option.""",
+        action = 'store_true',
+        dest = 'from_latest'
     )
 
-    files_grp.add_argument(
-        '-l',
-        '--last-hours',
+    since_grp.add_argument(
+        '--from',
         help =
-            """Process files from the last n hours. Filenames must follow the filename
-            formatter set in the configuration file. This option may not be used with
-            --since-last-consumed or --file.""",
-        dest = 'last_hours',
-        type = int
+            """Process files with a timestamp equal to or later than this timestamp
+            (in Ymd-HMS format). May not be used with the -s option.""",
+        dest = 'from_timestamp'
+    )
+
+    parser.add_argument(
+        '--to',
+        help =
+            """Process files with a timestamp equal to or earlier than this timestamp
+            (in Ymd-HMS format).""",
+        dest = 'to_timestamp'
     )
 
     parser.add_argument(
@@ -93,24 +94,13 @@ if __name__ == '__main__':
     setup_logging( args.debug )
 
     controller = CentralNoticeConsumerController(
-        directory = args.directory or cfg[ 'central_notice_log_file_directory' ],
-        filename_formatter = cfg[ 'central_notice_log_filename_formatter' ],
-        file_glob = args.file_glob,
-        since_last = args.since_last,
-        last_hours = args.last_hours
+        timestamp_pattern = cfg[ 'timestamp_regex' ],
+        sample_rate_pattern = cfg[ 'sample_rate_regex' ],
+        directory = args.directory or cfg[ 'central_notice_directory' ],
+        file_glob = args.file_glob or cfg[ 'central_notice_file_glob' ],
+        from_latest = args.from_latest,
+        from_timestamp = args.from_timestamp,
+        to_timestamp = args.to_timestamp
     )
 
     controller.execute()
-
-
-
-# readme DONE!
-# comments in yaml  DONE!
-# kwargs DONE!
-# file glob DONE!
-# file names must be unique DONE!
-# recent
-# since
-# create_tables.sql
-# pass db connection around
-# test data

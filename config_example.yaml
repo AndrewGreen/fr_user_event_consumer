@@ -1,3 +1,4 @@
+# Database settings
 database:
   name: 'fr_user_event_consumer_testing'
   password: 'pw'
@@ -5,23 +6,19 @@ database:
 
 # Default directories to load log files from (absent the --directory command-line option).
 # Log files in sub-directories will also be consumed.
-central_notice_log_file_directory: ''
-landing_page_log_file_directory: ''
+central_notice_directory: ''
+landing_page_directory: ''
 
-# Pattern to use for log file selection (absent the --file command-line option).
-# Pattern should only include the part of the filename up until the timestame. It will be
-# processed using string.format() and must include a {ts} replacement
-# field for timestamp.
-# Timestames in filenames must be in Ymd-HMS format as output by time.strftime().
-# For CentralNotice event log files, the sample rate component of filenames must
-# appear after timestamp.
-# Filenames must be unique across all log types.
-# Filenames ending in '.gz' are assumed to be compressed with gzip.
-central_notice_log_filename_formatter: 'centralnotice-impressions-{ts}'
-landing_page_log_filename_formatter: 'landingpage-impressions-{ts}'
+# Globs to select files of the specified type. Should select for any timestamp and, for
+# CentralNotice events, sample rate.
+central_notice_file_glob: 'centralnotice-impressions-*'
+landing_page_file_glob: 'landingpage-impressions-*'
 
-# Regular expression to extract sample rate from CentralNotice log filenames.
-central_notice_log_filename_sample_rate_regex: '(?<=sampled)\d+(?=\D)'
+# Regular expression to extract timestamps from log filenames.
+timestamp_regex: '(?<=-)\d+-\d+(?=\D)'
+
+# Regular expression to extract sample rate from log filenames (only CentralNotice events)
+sample_rate_regex: '(?<=sampled)\d+(?=\D)'
 
 # For aggregate data on CentralNotice events, calculate separate totals for only these
 # languages.

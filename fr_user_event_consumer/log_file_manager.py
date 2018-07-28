@@ -1,6 +1,7 @@
 import os
 import glob
 import logging
+import re
 
 TIMESTAMP_FORMAT = '%Y%m%d-%H%M%S'
 logger = logging.getLogger( __name__ )
@@ -11,49 +12,40 @@ class LogFileManager:
         self._log_file_mapper = log_file_mapper
 
 
-    def list_files_from_glob( self, directory, file_glob ):
+    def list_files( self, timestamp_pattern, directory, file_glob, from_timestamp = None,
+        to_timestamp = None ):
 
-        directories = self._get_directories( directory )
+        if ( not os.path.isdir( directory ) ):
+            raise ValueError( f'Not a directory: {directory}')
 
         if ( os.path.dirname( file_glob ) ):
             raise ValueError( f'file_glob can\'t include directory: {file_glob}' )
 
+        # Find subdirectories but don't follow symlinks, in case infinite recursion
+        directories = [ x[0] for x in os.walk( directory, followlinks = False ) ]
+
+        # Regex pattern for extracting timestamps from filenames
+        ts_pattern = re.compile( timestamp_pattern )
+
         files = []
         for d in directories:
             files_in_dir = glob.glob( os.path.join( d, file_glob ) )
-            logger.debug( f'Selected {len(files_in_dir)} files from directory {d}' )
-            files.extend( files_in_dir )
 
-        return files
-
-
-    def list_files_since_last( self, directory, filename_formatter ):
-        pass
-
-
-    def list_files_since_time( self, directory, filename_formatter, since ):
-
-        directories = self._get_directories( directory )
-        since_formated = since.strftime( TIMESTAMP_FORMAT )
-        since_filename = filename_formatter.format( ts = since_formated )
-
-        files = []
-        for d in directories:
-            files_in_dir = sorted( glob.glob( d ), reverse = True )
+            files_to_add = []
             for f in files_in_dir:
-                if ( since_filename > f ):
-                    break
-                files.append( f )
+                f_ts = ts_pattern.search( f ).group( 0 )
 
-        logger.debug( f'Selected {len(files)} files since {since_formated}' )
+                if ( ( from_timestamp is not None ) and ( f_ts < from_timestamp ) ):
+                    continue
 
+                if ( ( to_timestamp is not None ) and ( f_ts > to_timestamp ) ):
+                    continue
+
+                files_to_add.append( f )
+
+            logger.debug( f'Found {len(files_to_add)} files in directory {d}' )
+            files.extend( files_to_add )
+
+        print ( files )
         return files
 
-
-    def _get_directories( self, directory ):
-        """Return a list of directories that includes directory and subdirectories"""
-        if ( not os.path.isdir( directory ) ):
-            raise ValueError( f'Not a directory: {directory}')
-
-        # Don't follow symlinks, in case infinite recursion
-        return [ x[0] for x in os.walk( directory, followlinks = False ) ]

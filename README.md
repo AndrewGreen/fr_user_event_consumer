@@ -8,6 +8,8 @@ Usage
 -----
 
 Copy `config-example.yaml` to `config.yaml` and adjust settings as appropriate.
+Scripts search for a configuration file in the working directory or in
+`/etc/fr_user_events_consumer`.
 
 Scripts are in the `bin/` directory. Run them with --help for details about
 command-line options. See also inline comments in `config-example.yaml` and
@@ -21,10 +23,7 @@ Filenames
 
 Log filenames must be globally unique across all log types consumed by the scripts.
 
-Timestames in filenames must be in Ymd-HMS format as output by time.strftime().
-
-For CentralNotice event log files, the sample rate component of filenames must appear
-after timestamp.
+Timestamps in filenames must be in Ymd-HMS format as output by time.strftime().
 
 Filenames ending in '.gz' are assumed to be compressed with gzip. Otherwise, there are
 read as plain text.
