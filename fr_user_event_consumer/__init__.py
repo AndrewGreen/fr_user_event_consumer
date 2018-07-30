@@ -10,4 +10,6 @@ def setup_logging( debug ):
     if debug:
         logging.root.setLevel( level = logging.DEBUG ) 
     else:
-        logging.root.setLevel( level = logging.WARNING )
+        logging.root.setLevel( level = logging.INFO )
+
+    # TODO Make INFO go to stdout, or find some other solution for sending messages there

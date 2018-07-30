@@ -28,11 +28,18 @@ class CentralNoticeConsumerController:
 
     def execute( self ):
 
-        # Get a list of log files to process
 
+        # For from_latest option, get the most recent timestamp of all consumed files
         if ( self._from_latest ):
+            # TODO
             pass
 
+        logger.info(
+            f"Looking for files to consume with {self._file_glob} in {self._directory} "
+            f"from {self._from_timestamp} to {self._to_timestamp}."
+        )
+
+        # Get a list of log files to process
         files = self._log_file_manager.find_files(
             self._timestamp_pattern,
             self._directory,
