@@ -52,3 +52,10 @@ two lines. Then run it as follows:
 Do not deploy an uncommented version of the file to production. (Using the filename
 `sql/drop_tables.sql` for the uncommented version will prevent it from being added
 to the Git repository.)
+
+Installation
+------------
+
+For development, try this command (from the repository root directory):
+
+`pip3 install -e .`
