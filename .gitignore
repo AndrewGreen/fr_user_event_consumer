@@ -12,6 +12,9 @@
 # Actual config file
 config.yaml
 
+# Actual drop_tables.sql
+drop_tables.sql
+
 # Don't ignore this file
 !.gitignore
 

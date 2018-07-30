@@ -8,7 +8,7 @@ Usage
 -----
 
 Copy `config-example.yaml` to `config.yaml` and adjust settings as appropriate.
-Scripts search for a configuration file in the working directory or in
+Scripts look for a configuration file in the working directory or in
 `/etc/fr_user_events_consumer`.
 
 Scripts are in the `bin/` directory. Run them with --help for details about
@@ -22,8 +22,33 @@ Filenames
 ----------
 
 Log filenames must be globally unique across all log types consumed by the scripts.
+Maximum length for filenames is 128 characters.
 
 Timestamps in filenames must be in Ymd-HMS format as output by time.strftime().
 
 Filenames ending in '.gz' are assumed to be compressed with gzip. Otherwise, there are
 read as plain text.
+
+Database
+--------
+
+Required tables can be created by executing the SQL in `sql/create_tables.sql`.
+For WMF production, a previously existing database will be used; nonetheless, all the tables
+on production accessed by this script will have the columns, keys and indices specified by
+that file.
+
+For developer setup, create a database and a database user, grant the user rights on
+the database, then run the following command (substituting database, user and password
+as appropriate):
+
+`mariadb -u fr_user_event_consumer --password=pwd_for_fruec fr_user_events < sql/create_tables.sql`
+
+For development purposes, the SQL to drop all tables is also provided. To use it, copy
+`sql/drop_tables_example.sql` as `sql/drop_tables.sql` and uncomment the last two
+two lines. Then run it as follows:
+
+`mariadb -u fr_user_event_consumer --password=pwd_for_fruec fr_user_events < sql/drop_tables.sql`
+
+Do not deploy an uncommented version of the file to production. (Using the filename
+`sql/drop_tables.sql` for the uncommented version will prevent it from being added
+to the Git repository.)
