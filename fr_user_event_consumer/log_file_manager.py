@@ -12,7 +12,7 @@ class LogFileManager:
         self._log_file_mapper = log_file_mapper
 
 
-    def list_files( self, timestamp_pattern, directory, file_glob, from_timestamp = None,
+    def find_files( self, timestamp_pattern, directory, file_glob, from_timestamp = None,
         to_timestamp = None ):
 
         if ( not os.path.isdir( directory ) ):

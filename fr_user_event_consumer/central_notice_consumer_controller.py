@@ -34,7 +34,7 @@ class CentralNoticeConsumerController:
         if ( self._from_latest ):
             pass
 
-        files = self._log_file_manager.list_files(
+        files = self._log_file_manager.find_files(
             self._timestamp_pattern,
             self._directory,
             self._file_glob,
@@ -42,5 +42,4 @@ class CentralNoticeConsumerController:
             self._to_timestamp
         )
 
-#         for file in files:
-#             print( file )
+
