@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime, timedelta
 
 from fr_user_event_consumer.log_file_manager import LogFileManager
 from fr_user_event_consumer.db import CentralNoticeEventMapper, LogFileMapper
