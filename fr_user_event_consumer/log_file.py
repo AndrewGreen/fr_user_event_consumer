@@ -7,7 +7,7 @@ class LogFile:
         filename,
         directory,
         timestamp,
-        impression_type,
+        impression_type = None,
         status = None,
         consumed_events = None,
         invalid_lines = None

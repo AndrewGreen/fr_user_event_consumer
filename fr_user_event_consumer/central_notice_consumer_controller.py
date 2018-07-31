@@ -1,6 +1,5 @@
 import logging
 
-from fr_user_event_consumer.log_file import LogFile
 from fr_user_event_consumer.log_file_manager import LogFileManager
 from fr_user_event_consumer.impression_type import ImpressionType
 from fr_user_event_consumer.log_file_status import LogFileStatus
@@ -46,24 +45,14 @@ class CentralNoticeConsumerController:
             # TODO
             pass
 
-        # Get tuples with info (filename, directory, timestamp) on the files to try
-        file_infos = self._log_file_manager.find_files_to_consume(
+        # Get the files to try
+        files = self._log_file_manager.find_files_to_consume(
             self._timestamp_pattern,
             self._directory,
             self._file_glob,
             self._from_timestamp,
             self._to_timestamp
         )
-
-        # Create the LogFile objects
-        files = []
-        for file_info in file_infos:
-            files.append( LogFile(
-                filename = file_info[ 0 ],
-                directory = file_info[ 1 ],
-                timestamp = file_info[ 2 ],
-                impression_type = ImpressionType.BANNER
-            ) )
 
         self._stats[ 'files_found' ] = len( files )
 
@@ -80,6 +69,7 @@ class CentralNoticeConsumerController:
         for file in files:
             logger.debug( f'Processing {file.filename}.' )
             file.status = LogFileStatus.PROCESSING
+            file.impression_type = ImpressionType.BANNER
             self._log_file_mapper.save_file( file )
 
         db.close()

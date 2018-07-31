@@ -49,7 +49,10 @@ class LogFileMapper:
         cursor = self.connection.cursor()
 
         if ( file.status is None ):
-            raise ValueError( 'File status must be set before it can be saved.' )
+            raise ValueError( 'File status must be set before file can be saved.' )
+
+        if ( file.impression_type is None ):
+            raise ValueError( 'Impression type must be set before file can be saved.' )
 
         try:
             cursor.execute( SAVE_FILE_SQL, {

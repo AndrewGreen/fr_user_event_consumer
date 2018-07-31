@@ -4,6 +4,8 @@ import logging
 import re
 import datetime
 
+from fr_user_event_consumer.log_file import LogFile
+
 TIMESTAMP_FORMAT = '%Y%m%d-%H%M%S'
 logger = logging.getLogger( __name__ )
 
@@ -26,7 +28,7 @@ class LogFileManager:
 
         # Check for duplicate filenames (since we're looking in subdirectories, too)
         filenames = []
-        file_infos = []
+        files = []
         for d in directories:
             filenames_in_dir = glob.glob( os.path.join( d, file_glob ) )
 
@@ -47,9 +49,13 @@ class LogFileManager:
 
                 filenames.append( base_fn )
                 timestamp = datetime.datetime.strptime( fn_ts, TIMESTAMP_FORMAT )
-                file_infos.append( ( base_fn, d, timestamp ) )
+                files.append( LogFile(
+                    filename = base_fn,
+                    directory = d,
+                    timestamp = timestamp
+                ) )
 
         logger.debug(
-            f'Found {len( file_infos )} file(s) in {len( directories )} directorie(s)' )
+            f'Found {len( files )} file(s) in {len( directories )} directorie(s)' )
 
-        return file_infos
+        return files
