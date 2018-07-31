@@ -1,4 +1,4 @@
-from .log_file_status import LogFileStatus
+import os
 
 class LogFile:
 
@@ -19,3 +19,9 @@ class LogFile:
         self.status = status
         self.consumed_events = consumed_events
         self.invalid_lines = invalid_lines
+
+    def lines( self ):
+        filename = os.path.join( self.directory, self.filename )
+        with open( filename ) as stream:
+            for l in stream:
+                yield l

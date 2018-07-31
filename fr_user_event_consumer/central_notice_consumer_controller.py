@@ -3,6 +3,7 @@ import logging
 from fr_user_event_consumer.log_file_manager import LogFileManager
 from fr_user_event_consumer.impression_type import ImpressionType
 from fr_user_event_consumer.log_file_status import LogFileStatus
+from fr_user_event_consumer.central_notice_event import CentralNoticeEvent
 import fr_user_event_consumer.db as db
 
 logger = logging.getLogger( __name__ )
@@ -68,9 +69,20 @@ class CentralNoticeConsumerController:
 
         for file in files:
             logger.debug( f'Processing {file.filename}.' )
+
+            # Finish setting up file object and save it with processing status
             file.status = LogFileStatus.PROCESSING
             file.impression_type = ImpressionType.BANNER
             self._log_file_mapper.save_file( file )
+
+            for line in file.lines():
+                try:
+                    event = CentralNoticeEvent( line )
+                except ValueError as e:
+                    # TODO invalid line
+                    pass
+
+                print( event._data[ 'event' ][ 'randomcampaign' ] )
 
         db.close()
 
