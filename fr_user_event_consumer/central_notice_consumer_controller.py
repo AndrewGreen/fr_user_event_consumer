@@ -42,7 +42,7 @@ class CentralNoticeConsumerController:
         # TODO Check no files are in partially processed state
 
         # For from_latest option, get the most recent timestamp of all consumed files
-        if ( self._from_latest ):
+        if self._from_latest:
             # TODO
             pass
 
@@ -75,14 +75,12 @@ class CentralNoticeConsumerController:
             file.impression_type = ImpressionType.BANNER
             self._log_file_mapper.save_file( file )
 
+            # Cycle through the lines in the file, create and aggregate the events
             for line in file.lines():
-                try:
-                    event = CentralNoticeEvent( line )
-                except ValueError as e:
-                    # TODO invalid line
-                    pass
+                event = CentralNoticeEvent( line )
 
-                print( event._data[ 'event' ][ 'randomcampaign' ] )
+                if event.valid:
+                    print( event._data[ 'event' ][ 'randomcampaign' ] )
 
         db.close()
 
