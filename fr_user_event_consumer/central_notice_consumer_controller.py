@@ -65,15 +65,15 @@ class CentralNoticeConsumerController:
                 impression_type = ImpressionType.BANNER
             ) )
 
-        self._stats['files_found'] = len( files )
+        self._stats[ 'files_found' ] = len( files )
 
         # Filter out files already known to the database
         files = [ f for f in files if not self._log_file_mapper.file_known( f ) ]
 
-        self._stats['files_to_consume'] = len( files )
+        self._stats[ 'files_to_consume' ] = len( files )
 
         logger.debug(
-            f'Skipping {self._stats["files_found"] - self._stats["files_to_consume"]} '
+            f'Skipping {self._stats[  "files_found" ] - self._stats[ "files_to_consume" ]} '
             'file(s) already consumed.'
         )
 
