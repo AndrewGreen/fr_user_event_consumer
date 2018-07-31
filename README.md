@@ -45,13 +45,17 @@ as appropriate):
 
 For development purposes, the SQL to drop all tables is also provided. To use it, copy
 `sql/drop_tables_example.sql` as `sql/drop_tables.sql` and uncomment the last two
-two lines. Then run it as follows:
+two lines.
 
-`mariadb -u fr_user_event_consumer --password=pwd_for_fruec fr_user_events < sql/drop_tables.sql`
+Then, you can reset the database like this:
 
-Do not deploy an uncommented version of the file to production. (Using the filename
-`sql/drop_tables.sql` for the uncommented version will prevent it from being added
-to the Git repository.)
+`cat sql/drop_tables.sql sql/create_tables.sql | mariadb -u fr_user_event_consumer --password=pwd_for_fruec fr_user_events`
+
+(Do not deploy an uncommented version of the drop tables file to production. Using the
+filename `sql/drop_tables.sql` for the uncommented version will prevent it from being
+added to the Git repository.)
+
+
 
 Installation
 ------------
