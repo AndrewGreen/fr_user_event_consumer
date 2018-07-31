@@ -7,7 +7,9 @@ setup(
     license = 'GPL',
     packages = [ 'fr_user_event_consumer' ],
     install_requires = [
-        'pyyaml >= 3.11'
+        'pyyaml >= 3.11',
+        # FIXME check that this is the correct package
+        'mysql-connector-python >= 1.2.3'
     ],
     scripts = [
        'bin/consume_central_notice_events',

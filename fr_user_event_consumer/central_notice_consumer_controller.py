@@ -1,19 +1,20 @@
 import logging
 
 from fr_user_event_consumer.log_file_manager import LogFileManager
-from fr_user_event_consumer.db import CentralNoticeEventMapper, LogFileMapper
+import fr_user_event_consumer.db as db
 
 logger = logging.getLogger( __name__ )
 
 class CentralNoticeConsumerController:
 
-    def __init__( self, timestamp_pattern, sample_rate_pattern, directory,
+    def __init__( self, db_settings, timestamp_pattern, sample_rate_pattern, directory,
         file_glob, from_latest = False, from_timestamp = None,
         to_timestamp = None ):
 
         if ( from_latest and from_timestamp ):
             raise ValueError( 'Can\'t set both from_latest and from_timestamp.' )
 
+        self._db_settings = db_settings
         self._timestamp_pattern = timestamp_pattern
         self._sample_rate_pattern = sample_rate_pattern
         self._directory = directory
@@ -22,25 +23,26 @@ class CentralNoticeConsumerController:
         self._from_timestamp = from_timestamp
         self._to_timestamp = to_timestamp
 
-        self._log_file_manager = LogFileManager( LogFileMapper() )
-        self._central_notice_event_mapper = CentralNoticeEventMapper()
+        self._log_file_manager = LogFileManager()
+        self._log_file_mapper = db.LogFileMapper()
+        self._central_notice_event_mapper = db.CentralNoticeEventMapper()
 
 
     def execute( self ):
 
+        # Set up db connection
+        connection = db.connect( **self._db_settings )
+        self._log_file_mapper.connection = connection
+
+        # TODO Check no files are in partially processed state
 
         # For from_latest option, get the most recent timestamp of all consumed files
         if ( self._from_latest ):
             # TODO
             pass
 
-        logger.info(
-            f"Looking for files to consume with {self._file_glob} in {self._directory} "
-            f"from {self._from_timestamp} to {self._to_timestamp}."
-        )
-
-        # Get a list of log files to process
-        files = self._log_file_manager.find_files(
+        # Get the files to try
+        files = self._log_file_manager.find_files_to_consume(
             self._timestamp_pattern,
             self._directory,
             self._file_glob,
@@ -48,4 +50,8 @@ class CentralNoticeConsumerController:
             self._to_timestamp
         )
 
+        # Filter out files already known
+        files = [ f for f in files if not self._log_file_mapper.file_known( f ) ]
+
+        db.close()
 

@@ -94,6 +94,7 @@ if __name__ == '__main__':
     setup_logging( args.debug )
 
     controller = CentralNoticeConsumerController(
+        db_settings = cfg[ 'db_settings' ],
         timestamp_pattern = cfg[ 'timestamp_regex' ],
         sample_rate_pattern = cfg[ 'sample_rate_regex' ],
         directory = args.directory or cfg[ 'central_notice_directory' ],
