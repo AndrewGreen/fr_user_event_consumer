@@ -5,7 +5,7 @@ CREATE TABLE `files_processed` (
   impressiontype   VARCHAR(15)   NOT NULL,
   timestamp        TIMESTAMP     NOT NULL,
   directory        VARCHAR(256)  NOT NULL,
-  status           CHAR(1)       NOT NULL,
+  status           ENUM('processing', 'consumed') NOT NULL,
   consumed_events  INT           UNSIGNED DEFAULT NULL,
   invalid_lines    INT           UNSIGNED DEFAULT NULL,
 

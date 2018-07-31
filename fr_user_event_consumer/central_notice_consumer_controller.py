@@ -1,6 +1,9 @@
 import logging
 
+from fr_user_event_consumer.log_file import LogFile
 from fr_user_event_consumer.log_file_manager import LogFileManager
+from fr_user_event_consumer.impression_type import ImpressionType
+from fr_user_event_consumer.log_file_status import LogFileStatus
 import fr_user_event_consumer.db as db
 
 logger = logging.getLogger( __name__ )
@@ -27,6 +30,8 @@ class CentralNoticeConsumerController:
         self._log_file_mapper = db.LogFileMapper()
         self._central_notice_event_mapper = db.CentralNoticeEventMapper()
 
+        self._stats = {}
+
 
     def execute( self ):
 
@@ -41,8 +46,8 @@ class CentralNoticeConsumerController:
             # TODO
             pass
 
-        # Get the files to try
-        files = self._log_file_manager.find_files_to_consume(
+        # Get tuples with info (filename, directory, timestamp) on the files to try
+        file_infos = self._log_file_manager.find_files_to_consume(
             self._timestamp_pattern,
             self._directory,
             self._file_glob,
@@ -50,8 +55,32 @@ class CentralNoticeConsumerController:
             self._to_timestamp
         )
 
-        # Filter out files already known
+        # Create the LogFile objects
+        files = []
+        for file_info in file_infos:
+            files.append( LogFile(
+                filename = file_info[ 0 ],
+                directory = file_info[ 1 ],
+                timestamp = file_info[ 2 ],
+                impression_type = ImpressionType.BANNER
+            ) )
+
+        self._stats['files_found'] = len( files )
+
+        # Filter out files already known to the database
         files = [ f for f in files if not self._log_file_mapper.file_known( f ) ]
+
+        self._stats['files_to_consume'] = len( files )
+
+        logger.debug(
+            f'Skipping {self._stats["files_found"] - self._stats["files_to_consume"]} '
+            'file(s) already consumed.'
+        )
+
+        for file in files:
+            logger.debug( f'Processing {file.filename}.' )
+            file.status = LogFileStatus.PROCESSING
+            self._log_file_mapper.save_file( file )
 
         db.close()
 

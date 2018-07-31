@@ -2,8 +2,7 @@ import os
 import glob
 import logging
 import re
-
-from fr_user_event_consumer.log_file import LogFile
+import datetime
 
 TIMESTAMP_FORMAT = '%Y%m%d-%H%M%S'
 logger = logging.getLogger( __name__ )
@@ -27,16 +26,18 @@ class LogFileManager:
 
         # Check for duplicate filenames (since we're looking in subdirectories, too)
         filenames = []
-        files = []
+        file_infos = []
         for d in directories:
             filenames_in_dir = glob.glob( os.path.join( d, file_glob ) )
 
             for fn in filenames_in_dir:
-                fn_ts = ts_pattern.search( fn ).group( 0 )
+                base_fn = os.path.basename( fn )
+                fn_ts = ts_pattern.search( base_fn ).group( 0 )
 
                 # Duplicate filenames not allowed, regardless of directory
-                if ( fn in filenames ):
-                    raise ValueError( f'Duplicate filename found: {fn}' )
+                if ( base_fn in filenames ):
+                    raise ValueError(
+                        f'Duplicate filename found: {base_fn} in {d}' )
 
                 if ( ( from_timestamp is not None ) and ( fn_ts < from_timestamp ) ):
                     continue
@@ -44,10 +45,11 @@ class LogFileManager:
                 if ( ( to_timestamp is not None ) and ( fn_ts > to_timestamp ) ):
                     continue
 
-                filenames.append( fn )
-                files.append( LogFile( os.path.basename( fn ), d, fn_ts ) )
+                filenames.append( base_fn )
+                timestamp = datetime.datetime.strptime( fn_ts, TIMESTAMP_FORMAT )
+                file_infos.append( ( base_fn, d, timestamp ) )
 
         logger.debug(
-            f'Found {len( files )} files in {len( directories )} directories' )
+            f'Found {len( file_infos )} file(s) in {len( directories )} directorie(s)' )
 
-        return files
+        return file_infos
