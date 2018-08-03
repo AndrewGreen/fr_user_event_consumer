@@ -1,7 +1,7 @@
 import logging
 
 from fr_user_event_consumer.log_file_manager import LogFileManager
-from fr_user_event_consumer.impression_type import ImpressionType
+from fr_user_event_consumer.event_type import EventType
 from fr_user_event_consumer.log_file_status import LogFileStatus
 from fr_user_event_consumer.central_notice_event import CentralNoticeEvent
 import fr_user_event_consumer.db as db
@@ -48,11 +48,13 @@ class CentralNoticeConsumerController:
 
         # Get the files to try
         files = self._log_file_manager.find_files_to_consume(
+            EventType.CENTRAL_NOTICE,
             self._timestamp_pattern,
             self._directory,
             self._file_glob,
             self._from_timestamp,
-            self._to_timestamp
+            self._to_timestamp,
+            self._sample_rate_pattern
         )
 
         self._stats[ 'files_found' ] = len( files )
@@ -72,7 +74,6 @@ class CentralNoticeConsumerController:
 
             # Finish setting up file object and save it with processing status
             file.status = LogFileStatus.PROCESSING
-            file.impression_type = ImpressionType.BANNER
             self._log_file_mapper.save_file( file )
 
             # Cycle through the lines in the file, create and aggregate the events

@@ -51,13 +51,10 @@ class LogFileMapper:
         if ( file.status is None ):
             raise ValueError( 'File status must be set before file can be saved.' )
 
-        if ( file.impression_type is None ):
-            raise ValueError( 'Impression type must be set before file can be saved.' )
-
         try:
             cursor.execute( SAVE_FILE_SQL, {
                 'filename': file.filename,
-                'impressiontype': file.impression_type.value,
+                'impressiontype': file.event_type.legacy_key,
                 'timestamp': file.timestamp,
                 'directory': file.directory,
                 'status': file.status.value,

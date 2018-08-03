@@ -7,7 +7,8 @@ class LogFile:
         filename,
         directory,
         timestamp,
-        impression_type = None,
+        event_type,
+        sample_rate = None,
         status = None,
         consumed_events = None,
         invalid_lines = None
@@ -15,10 +16,12 @@ class LogFile:
         self.filename = filename
         self.directory = directory
         self.timestamp = timestamp
-        self.impression_type = impression_type
+        self.event_type = event_type
+        self.sample_rate = sample_rate
         self.status = status
         self.consumed_events = consumed_events
         self.invalid_lines = invalid_lines
+
 
     def lines( self ):
         filename = os.path.join( self.directory, self.filename )

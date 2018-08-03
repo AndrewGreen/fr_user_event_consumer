@@ -5,19 +5,20 @@ import re
 import datetime
 
 from fr_user_event_consumer.log_file import LogFile
+from fr_user_event_consumer.event_type import EventType
 
 TIMESTAMP_FORMAT = '%Y%m%d-%H%M%S'
 logger = logging.getLogger( __name__ )
 
 class LogFileManager:
 
-    def find_files_to_consume( self, timestamp_pattern, directory, file_glob,
-        from_timestamp = None, to_timestamp = None ):
+    def find_files_to_consume( self, event_type, timestamp_pattern, directory, file_glob,
+        from_timestamp = None, to_timestamp = None, sample_rate_pattern = None ):
 
-        if ( not os.path.isdir( directory ) ):
+        if not os.path.isdir( directory ):
             raise ValueError( f'Not a directory: {directory}')
 
-        if ( os.path.dirname( file_glob ) ):
+        if os.path.dirname( file_glob ):
             raise ValueError( f'file_glob can\'t include directory: {file_glob}' )
 
         # Find subdirectories but don't follow symlinks, in case infinite recursion
@@ -25,6 +26,14 @@ class LogFileManager:
 
         # Regex pattern for extracting timestamps from filenames
         ts_pattern = re.compile( timestamp_pattern )
+
+        # For CentralNotice events, require sample rate pattern, too
+        if event_type == EventType.CENTRAL_NOTICE:
+            if not sample_rate_pattern:
+                raise ValueError(
+                    'Sample rate pattern is required for CentralNotice events.' )
+
+            sr_pattern = re.compile( sample_rate_pattern )
 
         # Check for duplicate filenames (since we're looking in subdirectories, too)
         filenames = []
@@ -49,11 +58,27 @@ class LogFileManager:
 
                 filenames.append( base_fn )
                 timestamp = datetime.datetime.strptime( fn_ts, TIMESTAMP_FORMAT )
-                files.append( LogFile(
-                    filename = base_fn,
-                    directory = d,
-                    timestamp = timestamp
-                ) )
+
+                if event_type == EventType.LANDING_PAGE:
+                    files.append( LogFile(
+                        filename = base_fn,
+                        directory = d,
+                        timestamp = timestamp,
+                        event_type = EventType.LANDING_PAGE
+                    ) )
+
+                elif event_type == EventType.CENTRAL_NOTICE:
+                    sample_rate = sr_pattern.search( base_fn ).group( 0 )
+                    files.append( LogFile(
+                        filename = base_fn,
+                        directory = d,
+                        timestamp = timestamp,
+                        event_type = EventType.CENTRAL_NOTICE,
+                        sample_rate = sample_rate
+                    ) )
+
+                else:
+                    raise ValueError( 'Incorrect value for event_type' )
 
         logger.debug(
             f'Found {len( files )} file(s) in {len( directories )} directorie(s)' )
