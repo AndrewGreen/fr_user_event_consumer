@@ -1,9 +1,10 @@
 import logging
 
-from fr_user_event_consumer.log_file_manager import LogFileManager
 from fr_user_event_consumer.event_type import EventType
 from fr_user_event_consumer.log_file import LogFileStatus
 from fr_user_event_consumer.central_notice_event import CentralNoticeEvent
+
+import fr_user_event_consumer.log_file_manager as log_file_manager
 import fr_user_event_consumer.db as db
 
 logger = logging.getLogger( __name__ )
@@ -26,10 +27,6 @@ class CentralNoticeConsumerController:
         self._from_timestamp = from_timestamp
         self._to_timestamp = to_timestamp
 
-        self._log_file_manager = LogFileManager()
-        self._log_file_mapper = db.LogFileMapper()
-        self._central_notice_event_mapper = db.CentralNoticeEventMapper()
-
         self._stats = {}
 
 
@@ -37,7 +34,7 @@ class CentralNoticeConsumerController:
 
         # Set up db connection
         connection = db.connect( **self._db_settings )
-        self._log_file_mapper.connection = connection
+        db.log_file_mapper.connection = connection
 
         # TODO Check no files are in partially processed state
 
@@ -47,7 +44,7 @@ class CentralNoticeConsumerController:
             pass
 
         # Get the files to try
-        files = self._log_file_manager.find_files_to_consume(
+        files = log_file_manager.find_files_to_consume(
             EventType.CENTRAL_NOTICE,
             self._timestamp_pattern,
             self._directory,
@@ -60,7 +57,7 @@ class CentralNoticeConsumerController:
         self._stats[ 'files_found' ] = len( files )
 
         # Filter out files already known to the database
-        files = [ f for f in files if not self._log_file_mapper.file_known( f ) ]
+        files = [ f for f in files if not db.log_file_mapper.file_known( f ) ]
 
         self._stats[ 'files_to_consume' ] = len( files )
 
@@ -74,10 +71,10 @@ class CentralNoticeConsumerController:
 
             # Finish setting up file object and save it with processing status
             file.status = LogFileStatus.PROCESSING
-            self._log_file_mapper.save_file( file )
+            db.log_file_mapper.save_file( file )
 
             # Cycle through the lines in the file, create and aggregate the events
-            for line in self._log_file_manager.lines( file ):
+            for line in log_file_manager.lines( file ):
                 event = CentralNoticeEvent( line )
 
                 if event.valid:

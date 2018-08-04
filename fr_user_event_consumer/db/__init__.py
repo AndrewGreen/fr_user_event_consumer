@@ -1,7 +1,6 @@
 import mysql.connector as mariadb
 
-from .log_file_mapper import LogFileMapper
-from .central_notice_event_mapper import CentralNoticeEventMapper
+from fr_user_event_consumer.db import log_file_mapper
 
 connection = None
 
