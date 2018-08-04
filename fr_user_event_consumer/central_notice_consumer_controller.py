@@ -69,16 +69,29 @@ class CentralNoticeConsumerController:
         for file in files:
             logger.debug( f'Processing {file.filename}.' )
 
-            # Finish setting up file object and save it with processing status
+            # Save the file with processing status
             file.status = LogFileStatus.PROCESSING
             db.log_file_mapper.save_file( file )
 
             # Cycle through the lines in the file, create and aggregate the events
+            consumed_events = 0
+            invalid_lines = 0
+
             for line in log_file_manager.lines( file ):
                 event = CentralNoticeEvent( line )
 
                 if event.valid:
-                    print( event._data[ 'event' ][ 'randomcampaign' ] )
+                    # TODO Consume event
+                    consumed_events += 1
+                else:
+                    invalid_lines +=1
+                    logger.debug( f'Invalid line in {file.filename}: {line}' )
+
+            # Set file's stats and status as consumed, and save
+            file.consumed_events = consumed_events
+            file.invalid_lines = invalid_lines
+            file.status = LogFileStatus.CONSUMED
+            db.log_file_mapper.save_file( file )
 
         db.close()
 
