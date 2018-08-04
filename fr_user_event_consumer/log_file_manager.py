@@ -84,3 +84,10 @@ class LogFileManager:
             f'Found {len( files )} file(s) in {len( directories )} directorie(s)' )
 
         return files
+
+
+    def lines( self, file ):
+        filename = os.path.join( file.directory, file.filename )
+        with open( filename ) as stream:
+            for l in stream:
+                yield l

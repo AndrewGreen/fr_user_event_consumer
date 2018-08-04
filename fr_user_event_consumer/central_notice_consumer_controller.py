@@ -77,7 +77,7 @@ class CentralNoticeConsumerController:
             self._log_file_mapper.save_file( file )
 
             # Cycle through the lines in the file, create and aggregate the events
-            for line in file.lines():
+            for line in self._log_file_manager.lines( file ):
                 event = CentralNoticeEvent( line )
 
                 if event.valid:
