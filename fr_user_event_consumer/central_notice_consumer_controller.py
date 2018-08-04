@@ -2,7 +2,7 @@ import logging
 
 from fr_user_event_consumer.log_file_manager import LogFileManager
 from fr_user_event_consumer.event_type import EventType
-from fr_user_event_consumer.log_file_status import LogFileStatus
+from fr_user_event_consumer.log_file import LogFileStatus
 from fr_user_event_consumer.central_notice_event import CentralNoticeEvent
 import fr_user_event_consumer.db as db
 

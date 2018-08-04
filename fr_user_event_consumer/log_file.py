@@ -1,3 +1,5 @@
+from enum import Enum
+
 class LogFile:
 
     def __init__(
@@ -19,3 +21,8 @@ class LogFile:
         self.status = status
         self.consumed_events = consumed_events
         self.invalid_lines = invalid_lines
+
+
+class LogFileStatus(Enum):
+    CONSUMED = 'consumed'
+    PROCESSING = 'processing'
