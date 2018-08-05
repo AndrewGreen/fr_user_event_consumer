@@ -58,6 +58,9 @@ def find_files_to_consume( event_type, timestamp_format, extract_timetamp_regex_
                 continue
 
             filenames.append( base_fn )
+
+            # This will raise an error if the timestamp in the filename is in the wrong
+            # format
             timestamp = datetime.datetime.strptime( fn_ts, timestamp_format )
 
             if event_type == EventType.LANDING_PAGE:
