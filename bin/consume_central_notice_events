@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import argparse
+from datetime import datetime
 
 from fr_user_event_consumer import config, setup_logging
 from fr_user_event_consumer.central_notice_consumer_controller import CentralNoticeConsumerController
@@ -51,7 +52,8 @@ if __name__ == '__main__':
         '--from',
         help =
             """Process files with a timestamp equal to or later than this timestamp
-            (in Ymd-HMS format). May not be used with the -s option.""",
+            (in the format specified in the config file). May not be used with the
+            --from-latest-consumed option.""",
         dest = 'from_timestamp'
     )
 
@@ -59,7 +61,7 @@ if __name__ == '__main__':
         '--to',
         help =
             """Process files with a timestamp equal to or earlier than this timestamp
-            (in Ymd-HMS format).""",
+            (in the format specified in the config file).""",
         dest = 'to_timestamp'
     )
 
@@ -93,15 +95,30 @@ if __name__ == '__main__':
 
     setup_logging( args.debug )
 
+    # Parsing timestamp command line arguments should raise an error if they're not in
+    # the right format
+    timestamp_format_in_fn = cfg[ 'timestamp_format_in_filenames' ]
+
+    if args.from_timestamp:
+        from_time = datetime.strptime( args.from_timestamp, timestamp_format_in_fn )
+    else:
+        from_time = None
+
+    if args.to_timestamp:
+        to_time = datetime.strptime( args.to_timestamp, timestamp_format_in_fn )
+    else:
+        to_time = None
+
     controller = CentralNoticeConsumerController(
         db_settings = cfg[ 'db_settings' ],
-        timestamp_pattern = cfg[ 'timestamp_regex' ],
-        sample_rate_pattern = cfg[ 'sample_rate_regex' ],
+        timestamp_format_in_filenames = timestamp_format_in_fn,
+        extract_timestamp_regex = cfg[ 'extract_timestamp_regex' ],
+        extract_sample_rate_regex = cfg[ 'extract_sample_rate_regex' ],
         directory = args.directory or cfg[ 'central_notice_directory' ],
         file_glob = args.file_glob or cfg[ 'central_notice_file_glob' ],
         from_latest = args.from_latest,
-        from_timestamp = args.from_timestamp,
-        to_timestamp = args.to_timestamp
+        from_time = from_time,
+        to_time = to_time
     )
 
     controller.execute()

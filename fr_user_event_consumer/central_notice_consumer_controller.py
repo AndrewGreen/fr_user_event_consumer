@@ -11,21 +11,22 @@ logger = logging.getLogger( __name__ )
 
 class CentralNoticeConsumerController:
 
-    def __init__( self, db_settings, timestamp_pattern, sample_rate_pattern, directory,
-        file_glob, from_latest = False, from_timestamp = None,
-        to_timestamp = None ):
+    def __init__( self, db_settings, timestamp_format_in_filenames,
+        extract_timestamp_regex, extract_sample_rate_regex, directory, file_glob,
+        from_latest = False, from_time = None, to_time = None ):
 
-        if from_latest and from_timestamp:
+        if from_latest and from_time:
             raise ValueError( 'Can\'t set both from_latest and from_timestamp.' )
 
         self._db_settings = db_settings
-        self._timestamp_pattern = timestamp_pattern
-        self._sample_rate_pattern = sample_rate_pattern
+        self._timestamp_format_in_filenames = timestamp_format_in_filenames
+        self._extract_timestamp_regex = extract_timestamp_regex
+        self._extract_sample_rate_regex = extract_sample_rate_regex
         self._directory = directory
         self._file_glob = file_glob
         self._from_latest = from_latest
-        self._from_timestamp = from_timestamp
-        self._to_timestamp = to_timestamp
+        self._from_time = from_time
+        self._to_time = to_time
 
         self._stats = {}
 
@@ -46,12 +47,13 @@ class CentralNoticeConsumerController:
         # Get the files to try
         files = log_file_manager.find_files_to_consume(
             EventType.CENTRAL_NOTICE,
-            self._timestamp_pattern,
+            self._timestamp_format_in_filenames,
+            self._extract_timestamp_regex,
             self._directory,
             self._file_glob,
-            self._from_timestamp,
-            self._to_timestamp,
-            self._sample_rate_pattern
+            self._from_time,
+            self._to_time,
+            self._extract_sample_rate_regex
         )
 
         self._stats[ 'files_found' ] = len( files )

@@ -7,11 +7,11 @@ import datetime
 from fr_user_event_consumer.log_file import LogFile
 from fr_user_event_consumer.event_type import EventType
 
-TIMESTAMP_FORMAT = '%Y%m%d-%H%M%S'
 logger = logging.getLogger( __name__ )
 
-def find_files_to_consume( event_type, timestamp_pattern, directory, file_glob,
-    from_timestamp = None, to_timestamp = None, sample_rate_pattern = None ):
+def find_files_to_consume( event_type, timestamp_format, extract_timetamp_regex_str,
+    directory, file_glob, from_time = None, to_time = None,
+    extract_sample_rate_regex_str = None ):
 
     if not os.path.isdir( directory ):
         raise ValueError( f'Not a directory: {directory}')
@@ -19,19 +19,22 @@ def find_files_to_consume( event_type, timestamp_pattern, directory, file_glob,
     if os.path.dirname( file_glob ):
         raise ValueError( f'file_glob can\'t include directory: {file_glob}' )
 
+    from_timestamp = from_time.strftime( timestamp_format ) if from_time else None
+    to_timestamp = to_time.strftime( timestamp_format ) if to_time else None
+
     # Find subdirectories but don't follow symlinks, in case infinite recursion
     directories = [ x[0] for x in os.walk( directory, followlinks = False ) ]
 
     # Regex pattern for extracting timestamps from filenames
-    ts_pattern = re.compile( timestamp_pattern )
+    ts_regex = re.compile( extract_timetamp_regex_str )
 
     # For CentralNotice events, require sample rate pattern, too
     if event_type == EventType.CENTRAL_NOTICE:
-        if not sample_rate_pattern:
+        if not extract_sample_rate_regex_str:
             raise ValueError(
                 'Sample rate pattern is required for CentralNotice events.' )
 
-        sr_pattern = re.compile( sample_rate_pattern )
+        sr_regex = re.compile( extract_sample_rate_regex_str )
 
     # Check for duplicate filenames (since we're looking in subdirectories, too)
     filenames = []
@@ -41,7 +44,7 @@ def find_files_to_consume( event_type, timestamp_pattern, directory, file_glob,
 
         for fn in filenames_in_dir:
             base_fn = os.path.basename( fn )
-            fn_ts = ts_pattern.search( base_fn ).group( 0 )
+            fn_ts = ts_regex.search( base_fn ).group( 0 )
 
             # Duplicate filenames not allowed, regardless of directory
             if base_fn in filenames:
@@ -55,7 +58,7 @@ def find_files_to_consume( event_type, timestamp_pattern, directory, file_glob,
                 continue
 
             filenames.append( base_fn )
-            timestamp = datetime.datetime.strptime( fn_ts, TIMESTAMP_FORMAT )
+            timestamp = datetime.datetime.strptime( fn_ts, timestamp_format )
 
             if event_type == EventType.LANDING_PAGE:
                 files.append( LogFile(
@@ -68,7 +71,7 @@ def find_files_to_consume( event_type, timestamp_pattern, directory, file_glob,
             elif event_type == EventType.CENTRAL_NOTICE:
 
                 # Get and validate sample rate
-                sample_rate = int( sr_pattern.search( base_fn ).group( 0 ) )
+                sample_rate = int( sr_regex.search( base_fn ).group( 0 ) )
 
                 if ( sample_rate <= 0 ) or ( sample_rate > 100 ):
                     raise ValueError(

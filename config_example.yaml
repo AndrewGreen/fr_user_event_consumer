@@ -15,11 +15,14 @@ landing_page_directory: ''
 central_notice_file_glob: 'centralnotice-impressions-*'
 landing_page_file_glob: 'landingpage-impressions-*'
 
+# Format for timestamp in filenames (as output by datetime.strptime())
+timestamp_format_in_filenames: '%Y%m%d-%H%M%S'
+
 # Regular expression to extract timestamps from log filenames.
-timestamp_regex: '(?<=-)\d+-\d+(?=\D)'
+extract_timestamp_regex: '(?<=-)\d+-\d+(?=\D)'
 
 # Regular expression to extract sample rate from log filenames (only CentralNotice events)
-sample_rate_regex: '(?<=sampled)\d+(?=\D)'
+extract_sample_rate_regex: '(?<=sampled)\d+(?=\D)'
 
 # For aggregate data on CentralNotice events, calculate separate totals for only these
 # languages.
