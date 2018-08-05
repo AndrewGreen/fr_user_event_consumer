@@ -35,11 +35,8 @@ UPDATE_FILE_SQL = (
     '  filename = %(filename)s'
 )
 
-# This should be set by the caller before other methods are called
-connection = None
 
-
-def file_known( file ):
+def file_known( file, connection ):
     cursor = connection.cursor()
     cursor.execute( FILE_KNOWN_SQL, ( file.filename, ) )
     result = bool( cursor.fetchone()[ 0 ] )
@@ -47,7 +44,7 @@ def file_known( file ):
     return result
 
 
-def save_file( file ):
+def save_file( file, connection ):
     if file.status is None:
         raise ValueError( 'File status must be set before file can be saved.' )
 

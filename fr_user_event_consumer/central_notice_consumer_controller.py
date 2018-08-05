@@ -33,9 +33,8 @@ class CentralNoticeConsumerController:
 
     def execute( self ):
 
-        # Set up db connection
+        # Get db connection
         connection = db.connect( **self._db_settings )
-        db.log_file_mapper.connection = connection
 
         # TODO Check no files are in partially processed state
 
@@ -59,7 +58,7 @@ class CentralNoticeConsumerController:
         self._stats[ 'files_found' ] = len( files )
 
         # Filter out files already known to the database
-        files = [ f for f in files if not db.log_file_mapper.file_known( f ) ]
+        files = [ f for f in files if not db.log_file_mapper.file_known( f, connection ) ]
 
         self._stats[ 'files_to_consume' ] = len( files )
 
@@ -73,7 +72,7 @@ class CentralNoticeConsumerController:
 
             # Save the file with processing status
             file.status = LogFileStatus.PROCESSING
-            db.log_file_mapper.save_file( file )
+            db.log_file_mapper.save_file( file, connection )
 
             # Count events consumed and invalid lines
             consumed_events = 0
@@ -94,7 +93,7 @@ class CentralNoticeConsumerController:
             file.consumed_events = consumed_events
             file.invalid_lines = invalid_lines
             file.status = LogFileStatus.CONSUMED
-            db.log_file_mapper.save_file( file )
+            db.log_file_mapper.save_file( file, connection )
 
         db.close()
 
