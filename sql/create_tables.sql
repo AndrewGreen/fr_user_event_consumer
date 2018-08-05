@@ -5,6 +5,7 @@ CREATE TABLE `files` (
   impressiontype   VARCHAR(15)   NOT NULL,
   timestamp        TIMESTAMP     NOT NULL,
   directory        VARCHAR(256)  NOT NULL,
+  sample_rate      INT(2)        UNSIGNED DEFAULT NULL,
   status           ENUM('processing', 'consumed') NOT NULL,
   consumed_events  INT           UNSIGNED DEFAULT NULL,
   ignored_events   INT           UNSIGNED DEFAULT NULL,

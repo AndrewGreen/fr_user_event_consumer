@@ -112,8 +112,8 @@ if __name__ == '__main__':
     controller = CentralNoticeConsumerController(
         db_settings = cfg[ 'db_settings' ],
         timestamp_format_in_filenames = timestamp_format_in_fn,
-        extract_timestamp_regex_str = cfg[ 'extract_timestamp_regex' ],
-        extract_sample_rate_regex_str = cfg[ 'extract_sample_rate_regex' ],
+        extract_timestamp_regex = cfg[ 'extract_timestamp_regex' ],
+        extract_sample_rate_regex = cfg[ 'extract_sample_rate_regex' ],
         directory = args.directory or cfg[ 'central_notice_directory' ],
         file_glob = args.file_glob or cfg[ 'central_notice_file_glob' ],
         from_latest = args.from_latest,

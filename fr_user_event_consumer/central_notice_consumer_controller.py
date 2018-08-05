@@ -12,7 +12,7 @@ logger = logging.getLogger( __name__ )
 class CentralNoticeConsumerController:
 
     def __init__( self, db_settings, timestamp_format_in_filenames,
-        extract_timestamp_regex_str, extract_sample_rate_regex_str, directory, file_glob,
+        extract_timestamp_regex, extract_sample_rate_regex, directory, file_glob,
         from_latest = False, from_time = None, to_time = None ):
 
         if from_latest and from_time:
@@ -20,8 +20,8 @@ class CentralNoticeConsumerController:
 
         self._db_settings = db_settings
         self._timestamp_format_in_filenames = timestamp_format_in_filenames
-        self._extract_timestamp_regex_str = extract_timestamp_regex_str
-        self._extract_sample_rate_regex_str = extract_sample_rate_regex_str
+        self._extract_timestamp_regex = extract_timestamp_regex
+        self._extract_sample_rate_regex = extract_sample_rate_regex
         self._directory = directory
         self._file_glob = file_glob
         self._from_latest = from_latest
@@ -47,12 +47,12 @@ class CentralNoticeConsumerController:
         files = log_file_manager.find_files_to_consume(
             event_type = EventType.CENTRAL_NOTICE,
             timestamp_format = self._timestamp_format_in_filenames,
-            extract_timetamp_regex_str = self._extract_timestamp_regex_str,
+            extract_timetamp_regex = self._extract_timestamp_regex,
             directory = self._directory,
             file_glob = self._file_glob,
             from_time = self._from_time,
             to_time = self._to_time,
-            extract_sample_rate_regex_str = self._extract_sample_rate_regex_str
+            extract_sample_rate_regex = self._extract_sample_rate_regex
         )
 
         self._stats[ 'files_found' ] = len( files )

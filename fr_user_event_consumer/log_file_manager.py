@@ -9,9 +9,9 @@ from fr_user_event_consumer.event_type import EventType
 
 logger = logging.getLogger( __name__ )
 
-def find_files_to_consume( event_type, timestamp_format, extract_timetamp_regex_str,
+def find_files_to_consume( event_type, timestamp_format, extract_timetamp_regex,
     directory, file_glob, from_time = None, to_time = None,
-    extract_sample_rate_regex_str = None ):
+    extract_sample_rate_regex = None ):
 
     if not os.path.isdir( directory ):
         raise ValueError( f'Not a directory: {directory}')
@@ -26,15 +26,15 @@ def find_files_to_consume( event_type, timestamp_format, extract_timetamp_regex_
     directories = [ x[0] for x in os.walk( directory, followlinks = False ) ]
 
     # Regex pattern for extracting timestamps from filenames
-    ts_regex = re.compile( extract_timetamp_regex_str )
+    ts_pattern = re.compile( extract_timetamp_regex )
 
     # For CentralNotice events, require sample rate pattern, too
     if event_type == EventType.CENTRAL_NOTICE:
-        if not extract_sample_rate_regex_str:
+        if not extract_sample_rate_regex:
             raise ValueError(
                 'Sample rate pattern is required for CentralNotice events.' )
 
-        sr_regex = re.compile( extract_sample_rate_regex_str )
+        sr_pattern = re.compile( extract_sample_rate_regex )
 
     # Check for duplicate filenames (since we're looking in subdirectories, too)
     filenames = []
@@ -44,7 +44,7 @@ def find_files_to_consume( event_type, timestamp_format, extract_timetamp_regex_
 
         for fn in filenames_in_dir:
             base_fn = os.path.basename( fn )
-            fn_ts = ts_regex.search( base_fn ).group( 0 )
+            fn_ts = ts_pattern.search( base_fn ).group( 0 )
 
             # Duplicate filenames not allowed, regardless of directory
             if base_fn in filenames:
@@ -74,7 +74,7 @@ def find_files_to_consume( event_type, timestamp_format, extract_timetamp_regex_
             elif event_type == EventType.CENTRAL_NOTICE:
 
                 # Get and validate sample rate
-                sample_rate = int( sr_regex.search( base_fn ).group( 0 ) )
+                sample_rate = int( sr_pattern.search( base_fn ).group( 0 ) )
 
                 if ( sample_rate <= 0 ) or ( sample_rate > 100 ):
                     raise ValueError(

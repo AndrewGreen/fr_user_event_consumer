@@ -4,7 +4,7 @@ import logging
 from datetime import datetime
 
 EVENT_TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ' # Coordinate with EventLogging
-validate_banner_regex = re.compile( '^[A-Za-z0-9_]+$' ) # Coordinate with CentralNotice
+validate_banner_pattern = re.compile( '^[A-Za-z0-9_]+$' ) # Coordinate with CentralNotice
 
 from fr_user_event_consumer.country import Country
 from fr_user_event_consumer.language import Language
@@ -46,7 +46,7 @@ class CentralNoticeEvent:
 
         if 'banner' in self._data[ 'event' ]:
             self._banner = self._data[ 'event' ][ 'banner' ]
-            if not validate_banner_regex.match( self._banner ):
+            if not validate_banner_pattern.match( self._banner ):
                 logger.debug( f'Invalid banner: {self._banner}' )
                 return
         else:

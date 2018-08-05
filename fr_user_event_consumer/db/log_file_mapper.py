@@ -8,6 +8,7 @@ INSERT_FILE_SQL = (
     '  impressiontype,'
     '  timestamp,'
     '  directory,'
+    '  sample_rate,'
     '  status,'
     '  consumed_events,'
     '  ignored_events,'
@@ -18,6 +19,7 @@ INSERT_FILE_SQL = (
     '  %(impressiontype)s,'
     '  %(timestamp)s,'
     '  %(directory)s,'
+    '  %(sample_rate)s,'
     '  %(status)s,'
     '  %(consumed_events)s,'
     '  %(ignored_events)s,'
@@ -30,6 +32,7 @@ UPDATE_FILE_SQL = (
     '  impressiontype = %(impressiontype)s,'
     '  timestamp = %(timestamp)s,'
     '  directory = %(directory)s,'
+    '  sample_rate = %(sample_rate)s,'
     '  status = %(status)s,'
     '  consumed_events = %(consumed_events)s,'
     '  ignored_events = %(ignored_events)s,'
@@ -64,6 +67,7 @@ def save_file( file, connection ):
             'impressiontype': file.event_type.legacy_key,
             'timestamp': file.timestamp,
             'directory': file.directory,
+            'sample_rate': file.sample_rate,
             'status': file.status.value,
             'consumed_events': file.consumed_events,
             'ignored_events': file.ignored_events,
