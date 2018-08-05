@@ -67,6 +67,7 @@ def find_files_to_consume( event_type, timestamp_pattern, directory, file_glob,
 
             elif event_type == EventType.CENTRAL_NOTICE:
 
+                # Get and validate sample rate
                 sample_rate = int( sr_pattern.search( base_fn ).group( 0 ) )
 
                 if ( sample_rate <= 0 ) or ( sample_rate > 100 ):
@@ -83,6 +84,9 @@ def find_files_to_consume( event_type, timestamp_pattern, directory, file_glob,
 
             else:
                 raise ValueError( 'Incorrect value for event_type' )
+
+    # Return file in chronological (and not filesystem) order
+    files.sort( key = lambda f: f.timestamp )
 
     logger.debug(
         f'Found {len( files )} file(s) in {len( directories )} directorie(s)' )
