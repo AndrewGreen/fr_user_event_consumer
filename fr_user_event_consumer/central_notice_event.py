@@ -41,7 +41,7 @@ class CentralNoticeEvent:
         project_identifier = self._data[ 'event' ][ 'project' ]
         self.project = Project( project_identifier )
         if not self.project.valid:
-            logger.debug( f'Invalid country: {project_identifier}' )
+            logger.debug( f'Invalid project: {project_identifier}' )
             return
 
         if 'banner' in self._data[ 'event' ]:
