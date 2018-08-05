@@ -79,7 +79,7 @@ class CentralNoticeConsumerController:
             invalid_lines = 0
 
             # Cycle through the lines in the file, create and aggregate the events
-            for line in log_file_manager.lines( file ):
+            for line, line_no in log_file_manager.lines( file ):
                 event = CentralNoticeEvent( line )
 
                 if event.valid:
@@ -87,7 +87,8 @@ class CentralNoticeConsumerController:
                     consumed_events += 1
                 else:
                     invalid_lines +=1
-                    logger.debug( f'Invalid line in {file.filename}: {line}' )
+                    logger.debug(
+                        f'Invalid data on line {line_no} of {file.filename}: {line}' )
 
             # Set file's stats and status as consumed, and save
             file.consumed_events = consumed_events

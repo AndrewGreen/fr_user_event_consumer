@@ -102,6 +102,9 @@ def find_files_to_consume( event_type, timestamp_format, extract_timetamp_regex_
 
 def lines( file ):
     filename = os.path.join( file.directory, file.filename )
+    line_no = 1 # First line is 1
+
     with open( filename ) as stream:
         for l in stream:
-            yield l
+            yield ( l, line_no )
+            line_no += 1
