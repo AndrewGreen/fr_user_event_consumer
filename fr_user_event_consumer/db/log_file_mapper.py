@@ -46,7 +46,7 @@ def file_known( file ):
 def save_file( file ):
     cursor = connection.cursor()
 
-    if ( file.status is None ):
+    if file.status is None:
         raise ValueError( 'File status must be set before file can be saved.' )
 
     try:

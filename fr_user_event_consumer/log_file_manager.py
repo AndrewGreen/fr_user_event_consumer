@@ -44,14 +44,14 @@ def find_files_to_consume( event_type, timestamp_pattern, directory, file_glob,
             fn_ts = ts_pattern.search( base_fn ).group( 0 )
 
             # Duplicate filenames not allowed, regardless of directory
-            if ( base_fn in filenames ):
+            if base_fn in filenames:
                 raise ValueError(
                     f'Duplicate filename found: {base_fn} in {d}' )
 
-            if ( ( from_timestamp is not None ) and ( fn_ts < from_timestamp ) ):
+            if ( from_timestamp is not None ) and ( fn_ts < from_timestamp ):
                 continue
 
-            if ( ( to_timestamp is not None ) and ( fn_ts > to_timestamp ) ):
+            if ( to_timestamp is not None ) and ( fn_ts > to_timestamp ):
                 continue
 
             filenames.append( base_fn )

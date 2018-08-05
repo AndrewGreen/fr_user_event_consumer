@@ -7,7 +7,7 @@ connection = None
 def connect( user, password, host, database ):
     global connection
 
-    if ( connection is not None ):
+    if connection is not None:
         connection.close()
         raise RuntimeError( 'Attempt to connect to DB after connection already created.' )
 
@@ -21,7 +21,7 @@ def connect( user, password, host, database ):
 def close():
     global connection
 
-    if ( connection is None ):
+    if connection is None:
         raise RuntimeError( 'Attempt to close DB before connection was created.' )
 
     connection.close()

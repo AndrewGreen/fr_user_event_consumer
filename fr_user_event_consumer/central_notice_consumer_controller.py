@@ -15,7 +15,7 @@ class CentralNoticeConsumerController:
         file_glob, from_latest = False, from_timestamp = None,
         to_timestamp = None ):
 
-        if ( from_latest and from_timestamp ):
+        if from_latest and from_timestamp:
             raise ValueError( 'Can\'t set both from_latest and from_timestamp.' )
 
         self._db_settings = db_settings
@@ -73,10 +73,11 @@ class CentralNoticeConsumerController:
             file.status = LogFileStatus.PROCESSING
             db.log_file_mapper.save_file( file )
 
-            # Cycle through the lines in the file, create and aggregate the events
+            # Count events consumed and invalid lines
             consumed_events = 0
             invalid_lines = 0
 
+            # Cycle through the lines in the file, create and aggregate the events
             for line in log_file_manager.lines( file ):
                 event = CentralNoticeEvent( line )
 

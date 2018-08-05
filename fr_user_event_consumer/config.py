@@ -11,7 +11,7 @@ def get():
     """Return configuration object. This method loads configuration from the appropriate
     yaml file the first time it's called."""
 
-    if ( _config is None ):
+    if _config is None:
         _load()
 
     return _config
@@ -22,7 +22,7 @@ def _load():
     look in default locations.
     """
 
-    if ( filename is not None ):
+    if filename is not None:
         _actually_load( filename )
         return
 
@@ -35,7 +35,7 @@ def _load():
         except FileNotFoundError:
             continue
 
-    if ( not config_file_found ):
+    if not config_file_found:
         raise FileNotFoundError( 'No configuration file found.' )
 
 
