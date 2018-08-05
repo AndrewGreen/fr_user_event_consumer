@@ -1,9 +1,9 @@
 import mysql.connector as mariadb
 
-FILE_KNOWN_SQL = 'SELECT EXISTS (SELECT 1 FROM files_processed WHERE filename = %s)'
+FILE_KNOWN_SQL = 'SELECT EXISTS (SELECT 1 FROM files WHERE filename = %s)'
 
 INSERT_FILE_SQL = (
-    'INSERT INTO files_processed ('
+    'INSERT INTO files ('
     '  filename,'
     '  impressiontype,'
     '  timestamp,'
@@ -26,7 +26,7 @@ INSERT_FILE_SQL = (
 )
 
 UPDATE_FILE_SQL = (
-    'UPDATE files_processed SET'
+    'UPDATE files SET'
     '  impressiontype = %(impressiontype)s,'
     '  timestamp = %(timestamp)s,'
     '  directory = %(directory)s,'

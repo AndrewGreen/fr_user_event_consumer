@@ -1,5 +1,5 @@
 -- Create tables used by this library/scripts. See README.md for details.
-CREATE TABLE `files_processed` (
+CREATE TABLE `files` (
   id               INT(11)       UNSIGNED AUTO_INCREMENT,
   filename         VARCHAR(128)  NOT NULL,
   impressiontype   VARCHAR(15)   NOT NULL,
