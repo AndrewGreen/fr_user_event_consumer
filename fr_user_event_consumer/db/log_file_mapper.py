@@ -10,6 +10,7 @@ INSERT_FILE_SQL = (
     '  directory,'
     '  status,'
     '  consumed_events,'
+    '  ignored_events,'
     '  invalid_lines'
     ') '
     'VALUES ('
@@ -19,6 +20,7 @@ INSERT_FILE_SQL = (
     '  %(directory)s,'
     '  %(status)s,'
     '  %(consumed_events)s,'
+    '  %(ignored_events)s,'
     '  %(invalid_lines)s'
     ')'
 )
@@ -30,6 +32,7 @@ UPDATE_FILE_SQL = (
     '  directory = %(directory)s,'
     '  status = %(status)s,'
     '  consumed_events = %(consumed_events)s,'
+    '  ignored_events = %(ignored_events)s,'
     '  invalid_lines = %(invalid_lines)s '
     'WHERE'
     '  filename = %(filename)s'
@@ -63,6 +66,7 @@ def save_file( file, connection ):
             'directory': file.directory,
             'status': file.status.value,
             'consumed_events': file.consumed_events,
+            'ignored_events': file.ignored_events,
             'invalid_lines': file.invalid_lines
         } )
 

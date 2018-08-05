@@ -7,6 +7,7 @@ CREATE TABLE `files_processed` (
   directory        VARCHAR(256)  NOT NULL,
   status           ENUM('processing', 'consumed') NOT NULL,
   consumed_events  INT           UNSIGNED DEFAULT NULL,
+  ignored_events   INT           UNSIGNED DEFAULT NULL,
   invalid_lines    INT           UNSIGNED DEFAULT NULL,
 
   PRIMARY KEY (id),

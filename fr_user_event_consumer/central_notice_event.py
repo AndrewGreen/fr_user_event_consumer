@@ -61,3 +61,5 @@ class CentralNoticeEvent:
         # TODO Add campaign name validation when that's included in CentralNotice
 
         self.valid = True
+
+        self.is_bot = self._data[ 'userAgent' ][ 'is_bot' ]

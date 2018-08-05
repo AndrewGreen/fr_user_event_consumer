@@ -74,24 +74,34 @@ class CentralNoticeConsumerController:
             file.status = LogFileStatus.PROCESSING
             db.log_file_mapper.save_file( file, connection )
 
-            # Count events consumed and invalid lines
+            # Count events consumed, events ignored and invalid lines
             consumed_events = 0
+            ignored_events = 0
             invalid_lines = 0
 
             # Cycle through the lines in the file, create and aggregate the events
             for line, line_no in log_file_manager.lines( file ):
                 event = CentralNoticeEvent( line )
 
-                if event.valid:
-                    # TODO Consume event
-                    consumed_events += 1
-                else:
-                    invalid_lines +=1
+                # Events arrive via a public URL. Some validation happens before they
+                # get here, but we do a bit more.
+                if not event.valid:
+                    invalid_lines += 1
                     logger.debug(
                         f'Invalid data on line {line_no} of {file.filename}: {line}' )
 
+                    continue
+
+                # Ignore events from declared bots
+                if event.is_bot:
+                    ignored_events += 1
+                    continue
+
+                consumed_events += 1
+
             # Set file's stats and status as consumed, and save
             file.consumed_events = consumed_events
+            file.ignored_events = ignored_events
             file.invalid_lines = invalid_lines
             file.status = LogFileStatus.CONSUMED
             db.log_file_mapper.save_file( file, connection )
