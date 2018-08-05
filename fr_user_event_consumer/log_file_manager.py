@@ -66,7 +66,13 @@ def find_files_to_consume( event_type, timestamp_pattern, directory, file_glob,
                 ) )
 
             elif event_type == EventType.CENTRAL_NOTICE:
-                sample_rate = sr_pattern.search( base_fn ).group( 0 )
+
+                sample_rate = int( sr_pattern.search( base_fn ).group( 0 ) )
+
+                if ( sample_rate <= 0 ) or ( sample_rate > 100 ):
+                    raise ValueError(
+                        f'Invalid sample rate {sample_rate} for {base_fn}.' )
+
                 files.append( LogFile(
                     filename = base_fn,
                     directory = d,
