@@ -11,16 +11,16 @@ CREATE TABLE `files_processed` (
 
   PRIMARY KEY (id),
   UNIQUE KEY (filename),
-  INDEX(timestamp),
-  INDEX(status)
+  INDEX (timestamp),
+  INDEX (status)
 ) DEFAULT CHARACTER SET = utf8 ENGINE = InnoDB;
 
 CREATE TABLE `project` (
   id        SMALLINT(3)   UNSIGNED AUTO_INCREMENT,
   project   VARCHAR(128)  NOT NULL,
 
-  PRIMARY KEY(id),
-  UNIQUE KEY(project)
+  PRIMARY KEY (id),
+  UNIQUE KEY (project)
 ) DEFAULT CHARACTER SET = utf8 ENGINE = InnoDB;
 
 CREATE TABLE `language` (
@@ -33,9 +33,9 @@ CREATE TABLE `language` (
 
 CREATE TABLE `country` (
   id        SMALLINT(3)   UNSIGNED AUTO_INCREMENT,
-  iso_code  VARCHAR(8) NOT NULL,
+  iso_code  VARCHAR(8)    NOT NULL,
 
-  PRIMARY KEY(id),
+  PRIMARY KEY (id),
   UNIQUE KEY (iso_code)
 ) DEFAULT CHARACTER SET = utf8 ENGINE = InnoDB;
 
@@ -51,7 +51,7 @@ CREATE TABLE `bannerimpressions` (
   file_id         INT(11)       UNSIGNED NOT NULL,
 
   PRIMARY KEY (id),
-  UNIQUE KEY(timestamp, banner, campaign, project_id, language_id, country_id),
+  UNIQUE KEY (timestamp, banner, campaign, project_id, language_id, country_id),
   INDEX (timestamp),
   INDEX (banner),
   INDEX (campaign),
