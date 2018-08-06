@@ -1,5 +1,8 @@
 import mysql.connector as mariadb
 
+from fr_user_event_consumer.log_file import LogFile, LogFileStatus
+import fr_user_event_consumer.db as db
+
 FILE_KNOWN_SQL = 'SELECT EXISTS (SELECT 1 FROM files WHERE filename = %s)'
 
 INSERT_FILE_SQL = (
@@ -41,20 +44,38 @@ UPDATE_FILE_SQL = (
     '  filename = %(filename)s'
 )
 
+files = {}
 
-def file_known( file, connection ):
-    cursor = connection.cursor()
+
+def file_known( file ):
+    cursor = db.connection.cursor()
     cursor.execute( FILE_KNOWN_SQL, ( file.filename, ) )
     result = bool( cursor.fetchone()[ 0 ] )
     cursor.close()
     return result
 
 
-def save_file( file, connection ):
+def new_file(
+        filename,
+        directory,
+        timestamp,
+        event_type,
+        sample_rate = None,
+        status = LogFileStatus.NEW,
+        consumed_events = None,
+        ignored_events = None,
+        invalid_lines = None
+    ):
+
+    return LogFile( filename, directory, timestamp, event_type, sample_rate, status,
+                    consumed_events, ignored_events, invalid_lines )
+
+
+def save_file( file ):
     if file.status is None:
         raise ValueError( 'File status must be set before file can be saved.' )
 
-    cursor = connection.cursor()
+    cursor = db.connection.cursor()
 
     # We don't use ON DUPLICATE KEY UPDATE because that increases id on update.
     # So, check if the file is known, and if so, UPDATE, otherwise, INSERT.
@@ -75,9 +96,9 @@ def save_file( file, connection ):
         } )
 
     except mariadb.Error as e:
-        connection.rollback()
+        db.connection.rollback()
         cursor.close()
         raise e
 
-    connection.commit()
+    db.connection.commit()
     cursor.close()

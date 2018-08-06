@@ -1,7 +1,5 @@
 import mysql.connector as mariadb
 
-from fr_user_event_consumer.db import log_file_mapper
-
 connection = None
 
 def connect( user, password, host, database ):

@@ -1,5 +1,11 @@
 from enum import Enum
 
+class LogFileStatus(Enum):
+    NEW = 'new'
+    PROCESSING = 'processing'
+    CONSUMED = 'consumed'
+
+
 class LogFile:
 
     def __init__(
@@ -9,7 +15,7 @@ class LogFile:
         timestamp,
         event_type,
         sample_rate = None,
-        status = None,
+        status = LogFileStatus.NEW,
         consumed_events = None,
         ignored_events = None,
         invalid_lines = None
@@ -23,8 +29,3 @@ class LogFile:
         self.consumed_events = consumed_events
         self.ignored_events = ignored_events
         self.invalid_lines = invalid_lines
-
-
-class LogFileStatus(Enum):
-    CONSUMED = 'consumed'
-    PROCESSING = 'processing'

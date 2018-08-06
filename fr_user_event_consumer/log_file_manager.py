@@ -4,7 +4,7 @@ import logging
 import re
 import datetime
 
-from fr_user_event_consumer.log_file import LogFile
+from fr_user_event_consumer.db import log_file_mapper
 from fr_user_event_consumer.event_type import EventType
 
 logger = logging.getLogger( __name__ )
@@ -64,7 +64,7 @@ def find_files_to_consume( event_type, timestamp_format, extract_timetamp_regex,
             timestamp = datetime.datetime.strptime( fn_ts, timestamp_format )
 
             if event_type == EventType.LANDING_PAGE:
-                files.append( LogFile(
+                files.append( log_file_mapper.new_file(
                     filename = base_fn,
                     directory = d,
                     timestamp = timestamp,
@@ -80,7 +80,7 @@ def find_files_to_consume( event_type, timestamp_format, extract_timetamp_regex,
                     raise ValueError(
                         f'Invalid sample rate {sample_rate} for {base_fn}.' )
 
-                files.append( LogFile(
+                files.append( log_file_mapper.new_file(
                     filename = base_fn,
                     directory = d,
                     timestamp = timestamp,
