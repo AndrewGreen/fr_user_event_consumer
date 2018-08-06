@@ -1,6 +1,7 @@
 import mysql.connector as mariadb
 
 connection = None
+object_cache = {}
 
 def connect( user, password, host, database ):
     global connection
@@ -24,3 +25,15 @@ def close():
 
     connection.close()
     connection = None
+
+
+def get_cached_object( key ):
+    return object_cache.get( key, None )
+
+
+def set_object_in_cache( key, obj ):
+    object_cache[ key ] = obj
+
+
+def object_in_cache( key ):
+    return key in object_cache

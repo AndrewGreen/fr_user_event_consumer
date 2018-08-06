@@ -9,9 +9,9 @@ from fr_user_event_consumer.event_type import EventType
 
 logger = logging.getLogger( __name__ )
 
-def find_files_to_consume( event_type, timestamp_format, extract_timetamp_regex,
-    directory, file_glob, from_time = None, to_time = None,
-    extract_sample_rate_regex = None ):
+
+def file_infos( timestamp_format, extract_timetamp_regex, directory, file_glob,
+    from_time = None, to_time = None ):
 
     if not os.path.isdir( directory ):
         raise ValueError( f'Not a directory: {directory}')
@@ -19,85 +19,55 @@ def find_files_to_consume( event_type, timestamp_format, extract_timetamp_regex,
     if os.path.dirname( file_glob ):
         raise ValueError( f'file_glob can\'t include directory: {file_glob}' )
 
-    from_timestamp = from_time.strftime( timestamp_format ) if from_time else None
-    to_timestamp = to_time.strftime( timestamp_format ) if to_time else None
-
     # Find subdirectories but don't follow symlinks, in case infinite recursion
     directories = [ x[0] for x in os.walk( directory, followlinks = False ) ]
 
     # Regex pattern for extracting timestamps from filenames
-    ts_pattern = re.compile( extract_timetamp_regex )
-
-    # For CentralNotice events, require sample rate pattern, too
-    if event_type == EventType.CENTRAL_NOTICE:
-        if not extract_sample_rate_regex:
-            raise ValueError(
-                'Sample rate pattern is required for CentralNotice events.' )
-
-        sr_pattern = re.compile( extract_sample_rate_regex )
+    extract_ts_pattern = re.compile( extract_timetamp_regex )
 
     # Check for duplicate filenames (since we're looking in subdirectories, too)
     filenames = []
-    files = []
-    for d in directories:
-        filenames_in_dir = glob.glob( os.path.join( d, file_glob ) )
+    file_infos = []
+    for directory in directories:
+        filenames_in_dir = glob.glob( os.path.join( directory, file_glob ) )
 
         for fn in filenames_in_dir:
             base_fn = os.path.basename( fn )
-            fn_ts = ts_pattern.search( base_fn ).group( 0 )
+
+            # Extract and parse timestamp from filename. This  will raise an error if the
+            # timestamp in the filename is in the wrong format
+            fn_ts = extract_ts_pattern.search( base_fn ).group( 0 )
+            fn_time = datetime.datetime.strptime( fn_ts, timestamp_format )
 
             # Duplicate filenames not allowed, regardless of directory
             if base_fn in filenames:
                 raise ValueError(
-                    f'Duplicate filename found: {base_fn} in {d}' )
+                    f'Duplicate filename found: {base_fn} in {directory}' )
 
-            if ( from_timestamp is not None ) and ( fn_ts < from_timestamp ):
+            if ( from_time is not None ) and ( fn_time < from_time ):
                 continue
 
-            if ( to_timestamp is not None ) and ( fn_ts > to_timestamp ):
+            if ( to_time is not None ) and ( fn_time > to_time ):
                 continue
 
-            filenames.append( base_fn )
+            file_infos.append( {
+                'filename': base_fn,
+                'directory': directory,
+                'time': fn_time
+            } )
 
-            # This will raise an error if the timestamp in the filename is in the wrong
-            # format
-            timestamp = datetime.datetime.strptime( fn_ts, timestamp_format )
+    # Return file infos in chronological (and not filesystem) order
+    file_infos.sort( key = lambda f: f[ 'time' ] )
+    return file_infos
 
-            if event_type == EventType.LANDING_PAGE:
-                files.append( log_file_mapper.new_file(
-                    filename = base_fn,
-                    directory = d,
-                    timestamp = timestamp,
-                    event_type = EventType.LANDING_PAGE
-                ) )
 
-            elif event_type == EventType.CENTRAL_NOTICE:
+def sample_rate( filename, extract_sample_rate_regex ):
+    sr = int( re.search( extract_sample_rate_regex, filename ).group( 0 ) )
 
-                # Get and validate sample rate
-                sample_rate = int( sr_pattern.search( base_fn ).group( 0 ) )
+    if ( sr <= 0 ) or ( sr > 100 ):
+        raise ValueError( f'Invalid sample rate {sr} for {filename}.' )
 
-                if ( sample_rate <= 0 ) or ( sample_rate > 100 ):
-                    raise ValueError(
-                        f'Invalid sample rate {sample_rate} for {base_fn}.' )
-
-                files.append( log_file_mapper.new_file(
-                    filename = base_fn,
-                    directory = d,
-                    timestamp = timestamp,
-                    event_type = EventType.CENTRAL_NOTICE,
-                    sample_rate = sample_rate
-                ) )
-
-            else:
-                raise ValueError( 'Incorrect value for event_type' )
-
-    # Return file in chronological (and not filesystem) order
-    files.sort( key = lambda f: f.timestamp )
-
-    logger.debug(
-        f'Found {len( files )} file(s) in {len( directories )} directorie(s)' )
-
-    return files
+    return sr
 
 
 def lines( file ):

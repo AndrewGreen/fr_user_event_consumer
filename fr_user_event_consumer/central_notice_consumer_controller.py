@@ -38,43 +38,51 @@ class CentralNoticeConsumerController:
 
         # TODO Check no files are in partially processed state
 
-        # For from_latest option, get the most recent timestamp of all consumed files
+        # For from_latest option, get the most recent time of all consumed files
         if self._from_latest:
             # TODO
             pass
 
-        # Get the files to try
-        files = log_file_manager.find_files_to_consume(
-            event_type = EventType.CENTRAL_NOTICE,
+        # Get a list of objects with info about files to try
+        file_infos = log_file_manager.file_infos(
             timestamp_format = self._timestamp_format_in_filenames,
             extract_timetamp_regex = self._extract_timestamp_regex,
             directory = self._directory,
             file_glob = self._file_glob,
             from_time = self._from_time,
-            to_time = self._to_time,
-            extract_sample_rate_regex = self._extract_sample_rate_regex
+            to_time = self._to_time
         )
 
-        self._stats[ 'files_found' ] = len( files )
+        self._stats[ 'files_to_consume' ] = 0
+        self._stats[ 'files_skipped' ] = 0
 
-        # Filter out files already known to the database
-        files = [ f for f in files if not db.log_file_mapper.file_known( f ) ]
+        for file_info in file_infos:
+            filename = file_info[ 'filename' ]
+            directory = file_info[ 'directory' ]
 
-        self._stats[ 'files_to_consume' ] = len( files )
+            # Skip any files already known to the db
+            if db.log_file_mapper.file_known( filename ):
+                logger.debug( f'Skipping already processed {filename}.')
+                self._stats[ 'files_skipped' ] += 1
+                continue
 
-        logger.debug(
-            f'Skipping {self._stats[  "files_found" ] - self._stats[ "files_to_consume" ]} '
-            'file(s) already consumed.'
-        )
+            logger.debug( f'Processing {filename}.' )
+            self._stats[ 'files_to_consume' ] += 1
 
-        for file in files:
-            logger.debug( f'Processing {file.filename}.' )
+            sample_rate = log_file_manager.sample_rate( filename,
+                self._extract_sample_rate_regex )
 
-            # Save the file with processing status
-            file.status = LogFileStatus.PROCESSING
-            db.log_file_mapper.save_file( file )
+            # Create a new file object and insert it in the database
+            file = db.log_file_mapper.new_file(
+                filename = filename,
+                directory = directory,
+                time = file_info[ 'time' ],
+                event_type = EventType.CENTRAL_NOTICE,
+                sample_rate = sample_rate,
+                status = LogFileStatus.PROCESSING
+            )
 
-            # Count events consumed, events ignored and invalid lines
+            # Count events consumed, events ignored and invalid lines for this file
             consumed_events = 0
             ignored_events = 0
             invalid_lines = 0

@@ -3,12 +3,10 @@ import json
 import logging
 from datetime import datetime
 
+import fr_user_event_consumer.db.project_mapper as project_mapper
+
 EVENT_TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ' # Coordinate with EventLogging
 validate_banner_pattern = re.compile( '^[A-Za-z0-9_]+$' ) # Coordinate with CentralNotice
-
-from fr_user_event_consumer.country import Country
-from fr_user_event_consumer.language import Language
-from fr_user_event_consumer.proyect import Project
 
 logger = logging.getLogger( __name__ )
 
@@ -23,26 +21,29 @@ class CentralNoticeEvent:
         try:
             self._data = json.loads( json_string )
         except ValueError as e:
-            logger.debug( f'Invalid Json: {e}')
+            logger.debug( f'Invalid Json: {e}' )
             return
 
-        country_code = self._data[ 'event' ][ 'country' ]
-        self.country = Country( country_code )
-        if not self.country.valid:
-            logger.debug( f'Invalid country: {country_code}' )
-            return
-
-        language_code = self._data[ 'event' ][ 'uselang' ]
-        self.language = Language( language_code )
-        if not self.language.valid:
-            logger.debug( f'Invalid country: {language_code}' )
-            return
-
-        project_identifier = self._data[ 'event' ][ 'project' ]
-        self.project = Project( project_identifier )
-        if not self.project.valid:
-            logger.debug( f'Invalid project: {project_identifier}' )
-            return
+    # country, project and language temporarily commented out to test refactor
+#
+#         country_code = self._data[ 'event' ][ 'country' ]
+#         self.country = Country( country_code )
+#         if not self.country.valid:
+#             logger.debug( f'Invalid country: {country_code}' )
+#             return
+#
+#         language_code = self._data[ 'event' ][ 'uselang' ]
+#         self.language = Language( language_code )
+#         if not self.language.valid:
+#             logger.debug( f'Invalid country: {language_code}' )
+#             return
+#
+#         try:
+#             self.project = project_mapper.get_or_create_and_save(
+#                 self._data[ 'event' ][ 'project' ] )
+#         except ValueError as e:
+#             logger.debug( f'Invalid project: {e}' )
+#             return
 
         if 'banner' in self._data[ 'event' ]:
             self._banner = self._data[ 'event' ][ 'banner' ]
