@@ -88,7 +88,7 @@ class CentralNoticeConsumerController:
 
             # Cycle through the lines in the file, create and aggregate the events
             for line, line_no in log_file_manager.lines( file ):
-                event = db.central_notice_event_mapper.new( line )
+                event = db.central_notice_event_mapper.new_unsaved( line )
 
                 # Events arrive via a public URL. Some validation happens before they
                 # get here, but we do a bit more.
@@ -99,8 +99,8 @@ class CentralNoticeConsumerController:
 
                     continue
 
-                # Ignore events from declared bots
-                if event.is_bot:
+                # Ignore events from declared bots, previews or banner not shown
+                if event.bot or event.testing or ( not event.banner_shown ):
                     ignored_events += 1
                     continue
 

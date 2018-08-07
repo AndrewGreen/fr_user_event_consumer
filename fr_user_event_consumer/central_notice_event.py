@@ -63,4 +63,6 @@ class CentralNoticeEvent:
 
         self.valid = True
 
-        self.is_bot = self._data[ 'userAgent' ][ 'is_bot' ]
+        self.bot = self._data[ 'userAgent' ][ 'is_bot' ]
+        self.testing = self._data[ 'event' ].get( 'testingBanner', False )
+        self.banner_shown = self._data[ 'event' ][ 'statusCode' ] == '6' # Sent as string
