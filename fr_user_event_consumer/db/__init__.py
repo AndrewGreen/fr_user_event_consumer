@@ -4,7 +4,7 @@ from . import ( log_file_mapper, central_notice_event_mapper, country_mapper,
      language_mapper, project_mapper )
 
 connection = None
-object_cache = {}
+_object_cache = {}
 
 def connect( user, password, host, database ):
     global connection
@@ -31,12 +31,12 @@ def close():
 
 
 def get_cached_object( key ):
-    return object_cache.get( key, None )
+    return _object_cache.get( key, None )
 
 
 def set_object_in_cache( key, obj ):
-    object_cache[ key ] = obj
+    _object_cache[ key ] = obj
 
 
 def object_in_cache( key ):
-    return key in object_cache
+    return key in _object_cache
