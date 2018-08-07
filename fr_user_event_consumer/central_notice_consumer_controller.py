@@ -2,7 +2,6 @@ import logging
 
 from fr_user_event_consumer.event_type import EventType
 from fr_user_event_consumer.log_file import LogFileStatus
-from fr_user_event_consumer.central_notice_event import CentralNoticeEvent
 
 import fr_user_event_consumer.log_file_manager as log_file_manager
 import fr_user_event_consumer.db as db
@@ -61,7 +60,7 @@ class CentralNoticeConsumerController:
             directory = file_info[ 'directory' ]
 
             # Skip any files already known to the db
-            if db.log_file_mapper.file_known( filename ):
+            if db.log_file_mapper.known( filename ):
                 logger.debug( f'Skipping already processed {filename}.')
                 self._stats[ 'files_skipped' ] += 1
                 continue
@@ -73,7 +72,7 @@ class CentralNoticeConsumerController:
                 self._extract_sample_rate_regex )
 
             # Create a new file object and insert it in the database
-            file = db.log_file_mapper.new_file(
+            file = db.log_file_mapper.new(
                 filename = filename,
                 directory = directory,
                 time = file_info[ 'time' ],
@@ -89,7 +88,7 @@ class CentralNoticeConsumerController:
 
             # Cycle through the lines in the file, create and aggregate the events
             for line, line_no in log_file_manager.lines( file ):
-                event = CentralNoticeEvent( line )
+                event = db.central_notice_event_mapper.new( line )
 
                 # Events arrive via a public URL. Some validation happens before they
                 # get here, but we do a bit more.
@@ -112,7 +111,7 @@ class CentralNoticeConsumerController:
             file.ignored_events = ignored_events
             file.invalid_lines = invalid_lines
             file.status = LogFileStatus.CONSUMED
-            db.log_file_mapper.save_file( file )
+            db.log_file_mapper.save( file )
 
         db.close()
 

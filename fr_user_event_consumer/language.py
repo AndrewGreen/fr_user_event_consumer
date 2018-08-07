@@ -6,6 +6,7 @@ class Language:
 
     def __init__( self, language_code ):
         if not validation_pattern.match( language_code):
-            raise ValueError( f'Invalid language code: {language_code}')
+            raise ValueError( f'Invalid language code: {language_code}' )
 
         self.language_code = language_code
+        self.db_id = None

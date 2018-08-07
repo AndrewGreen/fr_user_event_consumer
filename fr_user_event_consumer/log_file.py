@@ -18,8 +18,7 @@ class LogFile():
         status = None,
         consumed_events = None,
         ignored_events = None,
-        invalid_lines = None,
-        db_id = None
+        invalid_lines = None
     ):
         self.filename = filename
         self.directory = directory
@@ -31,4 +30,4 @@ class LogFile():
         self.ignored_events = ignored_events
         self.invalid_lines = invalid_lines
 
-        self.db_id = db_id
+        self.db_id = None

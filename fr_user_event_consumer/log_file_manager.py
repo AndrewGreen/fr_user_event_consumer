@@ -4,9 +4,6 @@ import logging
 import re
 import datetime
 
-from fr_user_event_consumer.db import log_file_mapper
-from fr_user_event_consumer.event_type import EventType
-
 logger = logging.getLogger( __name__ )
 
 

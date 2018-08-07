@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import datetime
 
-import fr_user_event_consumer.db.project_mapper as project_mapper
+from fr_user_event_consumer import db
 
 EVENT_TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ' # Coordinate with EventLogging
 validate_banner_pattern = re.compile( '^[A-Za-z0-9_]+$' ) # Coordinate with CentralNotice
@@ -24,26 +24,26 @@ class CentralNoticeEvent:
             logger.debug( f'Invalid Json: {e}' )
             return
 
-    # country, project and language temporarily commented out to test refactor
-#
-#         country_code = self._data[ 'event' ][ 'country' ]
-#         self.country = Country( country_code )
-#         if not self.country.valid:
-#             logger.debug( f'Invalid country: {country_code}' )
-#             return
-#
-#         language_code = self._data[ 'event' ][ 'uselang' ]
-#         self.language = Language( language_code )
-#         if not self.language.valid:
-#             logger.debug( f'Invalid country: {language_code}' )
-#             return
-#
-#         try:
-#             self.project = project_mapper.get_or_create_and_save(
-#                 self._data[ 'event' ][ 'project' ] )
-#         except ValueError as e:
-#             logger.debug( f'Invalid project: {e}' )
-#             return
+        try:
+            self.country = db.country_mapper.get_or_new(
+                self._data[ 'event' ][ 'country' ] )
+        except ValueError as e:
+            logger.debug( f'Invalid country: {e}' )
+            return
+
+        try:
+            self.language = db.language_mapper.get_or_new(
+                self._data[ 'event' ][ 'uselang' ] )
+        except ValueError as e:
+            logger.debug( f'Invalid language: {e}' )
+            return
+
+        try:
+            self.project = db.project_mapper.get_or_new(
+                self._data[ 'event' ][ 'project' ] )
+        except ValueError as e:
+            logger.debug( f'Invalid project: {e}' )
+            return
 
         if 'banner' in self._data[ 'event' ]:
             self._banner = self._data[ 'event' ][ 'banner' ]

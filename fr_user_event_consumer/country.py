@@ -9,3 +9,4 @@ class Country:
             raise ValueError( f'Invalid country code: {country_code}')
 
         self.country_code = country_code
+        self.db_id = None

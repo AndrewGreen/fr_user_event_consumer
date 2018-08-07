@@ -1,7 +1,7 @@
 import mysql.connector as mariadb
 
 from fr_user_event_consumer.log_file import LogFile, LogFileStatus
-import fr_user_event_consumer.db as db
+from fr_user_event_consumer import db
 
 FILE_KNOWN_SQL = 'SELECT EXISTS (SELECT 1 FROM files WHERE filename = %s)'
 
@@ -48,7 +48,7 @@ UPDATE_FILE_SQL = (
 CACHE_KEY_PREFIX = 'LogFile'
 
 
-def file_known( filename ):
+def known( filename ):
     if db.object_in_cache( _make_cache_key( filename ) ):
         return True
 
@@ -59,7 +59,7 @@ def file_known( filename ):
     return result
 
 
-def new_file(
+def new(
         filename,
         directory,
         time,
@@ -70,6 +70,9 @@ def new_file(
         ignored_events = None,
         invalid_lines = None
     ):
+
+    file = LogFile( filename, directory, time, event_type, sample_rate,
+        status, consumed_events, ignored_events, invalid_lines )
 
     cursor = db.connection.cursor()
 
@@ -86,7 +89,7 @@ def new_file(
             'invalid_lines': invalid_lines
         } )
 
-        db_id = cursor.lastrowid
+        file.db_id = cursor.lastrowid
 
     except mariadb.Error as e:
         db.connection.rollback()
@@ -96,15 +99,11 @@ def new_file(
     db.connection.commit()
     cursor.close()
 
-    file = LogFile( filename, directory, time, event_type, sample_rate,
-        status, consumed_events, ignored_events, invalid_lines, db_id )
-
     db.set_object_in_cache( _make_cache_key( filename ), file )
-
     return file
 
 
-def save_file( file ):
+def save( file ):
 
     # Sanity check: file should already be in the cache
     if db.get_cached_object( _make_cache_key( file.filename ) ) != file:
