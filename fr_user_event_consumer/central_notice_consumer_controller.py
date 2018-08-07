@@ -10,9 +10,20 @@ logger = logging.getLogger( __name__ )
 
 class CentralNoticeConsumerController:
 
-    def __init__( self, db_settings, timestamp_format_in_filenames,
-        extract_timestamp_regex, extract_sample_rate_regex, directory, file_glob,
-        from_latest = False, from_time = None, to_time = None ):
+    def __init__(
+        self,
+        db_settings,
+        timestamp_format_in_filenames,
+        extract_timestamp_regex,
+        extract_sample_rate_regex,
+        directory,
+        file_glob,
+        detail_languages,
+        detail_projects_regex,
+        from_latest = False,
+        from_time = None,
+        to_time = None
+    ):
 
         if from_latest and from_time:
             raise ValueError( 'Can\'t set both from_latest and from_timestamp.' )
@@ -23,6 +34,8 @@ class CentralNoticeConsumerController:
         self._extract_sample_rate_regex = extract_sample_rate_regex
         self._directory = directory
         self._file_glob = file_glob
+        self._detail_languages = detail_languages
+        self._detail_projects_regex = detail_projects_regex
         self._from_latest = from_latest
         self._from_time = from_time
         self._to_time = to_time

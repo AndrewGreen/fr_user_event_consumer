@@ -116,6 +116,8 @@ if __name__ == '__main__':
         extract_sample_rate_regex = cfg[ 'extract_sample_rate_regex' ],
         directory = args.directory or cfg[ 'central_notice_directory' ],
         file_glob = args.file_glob or cfg[ 'central_notice_file_glob' ],
+        detail_languages = cfg[ 'central_notice_detail_languages' ],
+        detail_projects_regex = cfg[ 'central_notice_detail_projects_regex' ],
         from_latest = args.from_latest,
         from_time = from_time,
         to_time = to_time
