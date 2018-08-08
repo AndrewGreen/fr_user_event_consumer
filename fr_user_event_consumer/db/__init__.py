@@ -1,7 +1,7 @@
 import mysql.connector as mariadb
 
-from . import ( log_file_mapper, central_notice_event_mapper, country_mapper,
-     language_mapper, project_mapper )
+# from . import ( log_file_mapper, central_notice_event_mapper, country_mapper,
+#      language_mapper, project_mapper )
 
 connection = None
 _object_cache = {}

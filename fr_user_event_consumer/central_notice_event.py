@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import datetime
 
-from fr_user_event_consumer import db
+from fr_user_event_consumer.db import country_mapper, language_mapper, project_mapper
 
 EVENT_TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ' # Coordinate with EventLogging
 validate_banner_pattern = re.compile( '^[A-Za-z0-9_]+$' ) # Coordinate with CentralNotice
@@ -25,33 +25,33 @@ class CentralNoticeEvent:
             return
 
         try:
-            self.country = db.country_mapper.get_or_new(
+            self.country = country_mapper.get_or_new(
                 self._data[ 'event' ][ 'country' ] )
         except ValueError as e:
             logger.debug( f'Invalid country: {e}' )
             return
 
         try:
-            self.language = db.language_mapper.get_or_new(
+            self.language = language_mapper.get_or_new(
                 self._data[ 'event' ][ 'uselang' ] )
         except ValueError as e:
             logger.debug( f'Invalid language: {e}' )
             return
 
         try:
-            self.project = db.project_mapper.get_or_new(
+            self.project = project_mapper.get_or_new(
                 self._data[ 'event' ][ 'project' ] )
         except ValueError as e:
             logger.debug( f'Invalid project: {e}' )
             return
 
         if 'banner' in self._data[ 'event' ]:
-            self._banner = self._data[ 'event' ][ 'banner' ]
-            if not validate_banner_pattern.match( self._banner ):
-                logger.debug( f'Invalid banner: {self._banner}' )
+            self.banner = self._data[ 'event' ][ 'banner' ]
+            if not validate_banner_pattern.match( self.banner ):
+                logger.debug( f'Invalid banner: {self.banner}' )
                 return
         else:
-            self._banner = None
+            self.banner = None
 
         try:
             self.time = datetime.strptime( self._data[ 'dt' ], EVENT_TIMESTAMP_FORMAT )
@@ -60,6 +60,7 @@ class CentralNoticeEvent:
             return
 
         # TODO Add campaign name validation when that's included in CentralNotice
+        self.campaign = self._data[ 'event' ][ 'campaign' ]
 
         self.valid = True
 

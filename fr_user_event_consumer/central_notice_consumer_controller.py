@@ -3,8 +3,9 @@ import logging
 from fr_user_event_consumer.event_type import EventType
 from fr_user_event_consumer.log_file import LogFileStatus
 
-import fr_user_event_consumer.log_file_manager as log_file_manager
-import fr_user_event_consumer.db as db
+from fr_user_event_consumer import log_file_manager
+from fr_user_event_consumer.db import log_file_mapper, central_notice_event_mapper
+from fr_user_event_consumer import db
 
 logger = logging.getLogger( __name__ )
 
@@ -73,7 +74,7 @@ class CentralNoticeConsumerController:
             directory = file_info[ 'directory' ]
 
             # Skip any files already known to the db
-            if db.log_file_mapper.known( filename ):
+            if log_file_mapper.known( filename ):
                 logger.debug( f'Skipping already processed {filename}.')
                 self._stats[ 'files_skipped' ] += 1
                 continue
@@ -85,7 +86,7 @@ class CentralNoticeConsumerController:
                 self._extract_sample_rate_regex )
 
             # Create a new file object and insert it in the database
-            file = db.log_file_mapper.new(
+            file = log_file_mapper.new(
                 filename = filename,
                 directory = directory,
                 time = file_info[ 'time' ],
@@ -99,9 +100,16 @@ class CentralNoticeConsumerController:
             ignored_events = 0
             invalid_lines = 0
 
+            # Start aggregation (to aggregate data per-file)
+            db.central_notice_event_mapper.begin_aggregation(
+                self._detail_languages,
+                self._detail_projects_regex,
+                sample_rate
+            )
+
             # Cycle through the lines in the file, create and aggregate the events
             for line, line_no in log_file_manager.lines( file ):
-                event = db.central_notice_event_mapper.new_unsaved( line )
+                event = central_notice_event_mapper.new_unsaved( line )
 
                 # Events arrive via a public URL. Some validation happens before they
                 # get here, but we do a bit more.
@@ -117,14 +125,18 @@ class CentralNoticeConsumerController:
                     ignored_events += 1
                     continue
 
+                central_notice_event_mapper.aggregate( event )
                 consumed_events += 1
+
+            # Finish the aggregation (inserts aggregated data from the file in the db)
+            db.central_notice_event_mapper.end_aggregation()
 
             # Set file's stats and status as consumed, and save
             file.consumed_events = consumed_events
             file.ignored_events = ignored_events
             file.invalid_lines = invalid_lines
             file.status = LogFileStatus.CONSUMED
-            db.log_file_mapper.save( file )
+            log_file_mapper.save( file )
 
         db.close()
 
