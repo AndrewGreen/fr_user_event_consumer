@@ -24,6 +24,10 @@ class CentralNoticeEvent:
             logger.debug( f'Invalid Json: {e}' )
             return
 
+        self.bot = self._data[ 'userAgent' ][ 'is_bot' ]
+        self.testing = self._data[ 'event' ].get( 'testingBanner', False )
+        self.banner_shown = self._data[ 'event' ][ 'statusCode' ] == '6' # Sent as string
+
         try:
             self.country = country_mapper.get_or_new(
                 self._data[ 'event' ][ 'country' ] )
@@ -53,17 +57,18 @@ class CentralNoticeEvent:
         else:
             self.banner = None
 
+        # TODO Add campaign name validation when that's included in CentralNotice
+        self.campaign = self._data[ 'event' ][ 'campaign' ]
+
+        # Something is wrong if this isn't a banner preview (testing) but there's no
+        # campaign
+        if ( not self.campaign ) and ( not self.testing ):
+            return
+
         try:
             self.time = datetime.strptime( self._data[ 'dt' ], EVENT_TIMESTAMP_FORMAT )
         except ValueError as e:
             logger.debug( f'Invalid timestamp: {e}' )
             return
 
-        # TODO Add campaign name validation when that's included in CentralNotice
-        self.campaign = self._data[ 'event' ][ 'campaign' ]
-
         self.valid = True
-
-        self.bot = self._data[ 'userAgent' ][ 'is_bot' ]
-        self.testing = self._data[ 'event' ].get( 'testingBanner', False )
-        self.banner_shown = self._data[ 'event' ][ 'statusCode' ] == '6' # Sent as string

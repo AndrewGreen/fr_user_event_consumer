@@ -104,7 +104,8 @@ class CentralNoticeConsumerController:
             db.central_notice_event_mapper.begin_aggregation(
                 self._detail_languages,
                 self._detail_projects_regex,
-                sample_rate
+                sample_rate,
+                file
             )
 
             # Cycle through the lines in the file, create and aggregate the events
