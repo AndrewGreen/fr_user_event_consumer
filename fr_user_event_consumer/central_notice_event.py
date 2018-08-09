@@ -44,7 +44,7 @@ class CentralNoticeEvent:
 
         try:
             self.project = project_mapper.get_or_new(
-                self._data[ 'event' ][ 'project' ] )
+                self._data[ 'event' ][ 'db' ] )
         except ValueError as e:
             _logger.debug( 'Invalid project: {}'.format( e ) )
             return
