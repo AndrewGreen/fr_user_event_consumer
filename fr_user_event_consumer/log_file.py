@@ -1,7 +1,6 @@
 from enum import Enum
 
 class LogFileStatus( Enum ):
-    NEW = 'new'
     PROCESSING = 'processing'
     CONSUMED = 'consumed'
 

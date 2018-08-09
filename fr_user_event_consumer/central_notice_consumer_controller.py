@@ -49,7 +49,9 @@ class CentralNoticeConsumerController:
         # Open db connection
         db.connect( **self._db_settings )
 
-        # TODO Check no files are in partially processed state
+        # Check no files are in partially processed state
+        if log_file_mapper.files_with_processing_status():
+            raise RuntimeError( 'Files with processing status found.' )
 
         # For from_latest option, get the most recent time of all consumed files
         if self._from_latest:

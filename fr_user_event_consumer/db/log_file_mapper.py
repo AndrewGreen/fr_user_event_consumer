@@ -1,4 +1,3 @@
-import datetime
 import mysql.connector as mariadb
 
 from fr_user_event_consumer.log_file import LogFile, LogFileStatus
@@ -46,7 +45,10 @@ UPDATE_FILE_SQL = (
     '  id = %(db_id)s'
 )
 
-LATEST_TIME_SQL = ( 'SELECT timestamp FROM files ORDER BY timestamp DESC LIMIT 1' )
+LATEST_TIME_SQL = 'SELECT timestamp FROM files ORDER BY timestamp DESC LIMIT 1'
+
+FILES_WITH_PROCESSING_STATUS_SQL = (
+    'SELECT EXISTS ( SELECT 1 FROM files WHERE status = \'processing\' LIMIT 1)' )
 
 CACHE_KEY_PREFIX = 'LogFile'
 
@@ -67,7 +69,7 @@ def new(
         directory,
         time,
         event_type,
-        status = LogFileStatus.NEW,
+        status = None,
         sample_rate = None,
         consumed_events = None,
         ignored_events = None,
@@ -148,9 +150,12 @@ def get_lastest_time():
     return row[0] if row else None
 
 
-def get_files_by_status( log_file_status ):
-    # stub
-    pass
+def files_with_processing_status():
+    cursor = db.connection.cursor()
+    cursor.execute( FILES_WITH_PROCESSING_STATUS_SQL )
+    result = bool( cursor.fetchone()[ 0 ] )
+    cursor.close()
+    return result
 
 
 def load_file( filename ):
