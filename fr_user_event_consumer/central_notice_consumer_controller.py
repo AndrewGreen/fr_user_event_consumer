@@ -7,7 +7,7 @@ from fr_user_event_consumer import log_file_manager
 from fr_user_event_consumer.db import log_file_mapper, central_notice_event_mapper
 from fr_user_event_consumer import db
 
-logger = logging.getLogger( __name__ )
+_logger = logging.getLogger( __name__ )
 
 class CentralNoticeConsumerController:
 
@@ -75,11 +75,11 @@ class CentralNoticeConsumerController:
 
             # Skip any files already known to the db
             if log_file_mapper.known( filename ):
-                logger.debug( 'Skipping already processed {}.'.format( filename ) )
+                _logger.debug( 'Skipping already processed {}.'.format( filename ) )
                 self._stats[ 'files_skipped' ] += 1
                 continue
 
-            logger.debug( 'Processing {}.'.format( filename ) )
+            _logger.debug( 'Processing {}.'.format( filename ) )
             self._stats[ 'files_to_consume' ] += 1
 
             sample_rate = log_file_manager.sample_rate( filename,
@@ -116,7 +116,7 @@ class CentralNoticeConsumerController:
                 # get here, but we do a bit more.
                 if not event.valid:
                     invalid_lines += 1
-                    logger.debug( 'Invalid data on line {} of {}: {}'.format(
+                    _logger.debug( 'Invalid data on line {} of {}: {}'.format(
                         line_no, file.filename, line ) )
 
                     continue

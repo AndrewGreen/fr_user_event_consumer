@@ -4,8 +4,6 @@ import logging
 import re
 import datetime
 
-logger = logging.getLogger( __name__ )
-
 
 def file_infos( timestamp_format, extract_timetamp_regex, directory, file_glob,
     from_time = None, to_time = None ):

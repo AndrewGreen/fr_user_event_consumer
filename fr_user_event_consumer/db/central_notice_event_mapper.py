@@ -37,7 +37,7 @@ _OTHER_LANGUAGE_CODE = 'other'
 _other_project = None
 _other_language = None
 
-logger = logging.getLogger( __name__ )
+_logger = logging.getLogger( __name__ )
 
 
 def new_unsaved( json_string ):
@@ -113,7 +113,7 @@ class CNAggregationStep:
 
 
     def save( self ):
-        logger.debug( 'Aggregating {} cells'.format( len( self._data ) ) )
+        _logger.debug( 'Aggregating {} cells'.format( len( self._data ) ) )
 
         cursor = db.connection.cursor()
 
