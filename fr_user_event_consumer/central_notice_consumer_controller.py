@@ -101,7 +101,7 @@ class CentralNoticeConsumerController:
             invalid_lines = 0
 
             # Start aggregation (to aggregate data per-file)
-            db.central_notice_event_mapper.begin_aggregation(
+            aggregation_step = db.central_notice_event_mapper.new_cn_aggregation_step(
                 self._detail_languages,
                 self._detail_projects_regex,
                 sample_rate,
@@ -126,11 +126,11 @@ class CentralNoticeConsumerController:
                     ignored_events += 1
                     continue
 
-                central_notice_event_mapper.aggregate( event )
+                aggregation_step.add_event( event )
                 consumed_events += 1
 
             # Finish the aggregation (inserts aggregated data from the file in the db)
-            db.central_notice_event_mapper.end_aggregation()
+            aggregation_step.save()
 
             # Set file's stats and status as consumed, and save
             file.consumed_events = consumed_events
