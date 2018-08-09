@@ -53,8 +53,11 @@ class CentralNoticeConsumerController:
 
         # For from_latest option, get the most recent time of all consumed files
         if self._from_latest:
-            # TODO
-            pass
+            self._from_time = log_file_mapper.get_lastest_time()
+            if self._from_time is None:
+                _logger.warn(
+                    'Requested processing files from latest time previously consumed, '
+                    'but no latest time was found. Processing with no \'from\' limit' )
 
         # Get a list of objects with info about files to try
         file_infos = log_file_manager.file_infos(

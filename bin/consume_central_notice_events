@@ -42,8 +42,9 @@ if __name__ == '__main__':
     since_grp.add_argument(
         '--from-latest-consumed',
         help =
-            """Process files for times from the most recent events consumed. May not be
-            used with the --from option.""",
+            """Process files for times from the timestamp of most recent file consumed,
+            inclusive. This should attempt to consume, and skip, at least one file. May
+            not be used with the --from option.""",
         action = 'store_true',
         dest = 'from_latest'
     )

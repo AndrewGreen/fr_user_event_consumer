@@ -1,3 +1,4 @@
+import datetime
 import mysql.connector as mariadb
 
 from fr_user_event_consumer.log_file import LogFile, LogFileStatus
@@ -44,6 +45,8 @@ UPDATE_FILE_SQL = (
     'WHERE'
     '  id = %(db_id)s'
 )
+
+LATEST_TIME_SQL = ( 'SELECT timestamp FROM files ORDER BY timestamp DESC LIMIT 1' )
 
 CACHE_KEY_PREFIX = 'LogFile'
 
@@ -135,6 +138,14 @@ def save( file ):
 
     db.connection.commit()
     cursor.close()
+
+
+def get_lastest_time():
+    cursor = db.connection.cursor()
+    cursor.execute( LATEST_TIME_SQL )
+    row = cursor.fetchone()
+    cursor.close()
+    return row[0] if row else None
 
 
 def get_files_by_status( log_file_status ):
