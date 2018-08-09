@@ -1,8 +1,10 @@
 import os
 import glob
-import logging
+import gzip
 import re
 import datetime
+
+_gzip_filename_pattern = re.compile( '.*\.gz$' )
 
 
 def file_infos( timestamp_format, extract_timetamp_regex, directory, file_glob,
@@ -69,7 +71,14 @@ def lines( file ):
     filename = os.path.join( file.directory, file.filename )
     line_no = 1 # First line is 1
 
-    with open( filename ) as stream:
-        for l in stream:
-            yield ( l, line_no )
-            line_no += 1
+    if _gzip_filename_pattern.match( file.filename ):
+        with gzip.open( filename ) as stream:
+            for l in stream:
+                yield ( l, line_no )
+                line_no += 1
+
+    else:
+        with open( filename ) as stream:
+            for l in stream:
+                yield ( l, line_no )
+                line_no += 1
