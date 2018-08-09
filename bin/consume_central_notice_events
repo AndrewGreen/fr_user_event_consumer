@@ -12,8 +12,8 @@ if __name__ == '__main__':
     # Set up command-line arguments
     parser = argparse.ArgumentParser(
         description =
-            """Read CentralNotice event log files, aggregate and store in database.
-            Note: log filenames must be globally unique across all logs consumed by
+            """Read CentralNotice event log files, aggregate them, and store them in a
+            database. Log filenames must be globally unique across all logs consumed by
             fr_user_event_consumer scripts. Regardless of the options selected, events
             will only be consumed from files that have not been marked as already
             processed.
@@ -43,8 +43,8 @@ if __name__ == '__main__':
         '--from-latest-consumed',
         help =
             """Process files for times from the timestamp of most recent file consumed,
-            inclusive. This should attempt to consume, and skip, at least one file. May
-            not be used with the --from option.""",
+            inclusive. The last file processed will be included in the list to process,
+            but it will be skipped. May not be used with the --from option.""",
         action = 'store_true',
         dest = 'from_latest'
     )
@@ -53,8 +53,8 @@ if __name__ == '__main__':
         '--from',
         help =
             """Process files with a timestamp equal to or later than this timestamp
-            (in the format specified in the config file). May not be used with the
-            --from-latest-consumed option.""",
+            (using the timestamp format specified in the config file). May not be used
+            with the --from-latest-consumed option.""",
         dest = 'from_timestamp'
     )
 
@@ -62,7 +62,7 @@ if __name__ == '__main__':
         '--to',
         help =
             """Process files with a timestamp equal to or earlier than this timestamp
-            (in the format specified in the config file).""",
+            (in the timestamp format specified in the config file).""",
         dest = 'to_timestamp'
     )
 
@@ -85,7 +85,7 @@ if __name__ == '__main__':
         '--dry-run',
         help =
             """Read files and events, but do not write any data to the database. Instead,
-            output to stdout the SQL that would be executed to write the data.""",
+            output to stdout all SQL for insert, update or delete queries.""",
         action = 'store_true'
     )
 
