@@ -108,8 +108,8 @@ def save( file ):
     # Sanity check: file should already be in the cache
     if db.get_cached_object( _make_cache_key( file.filename ) ) != file:
         raise RuntimeError(
-            f'Attempting to save existing log file {file.filename} but it\'s not in'
-            'the cache, or a different object is in the cache.'
+            ( 'Attempting to save existing log file {} but it\'s not in the cache, or '
+            'a different object is in the cache.' ).format( file.filename )
         )
 
     cursor = db.connection.cursor()

@@ -75,11 +75,11 @@ class CentralNoticeConsumerController:
 
             # Skip any files already known to the db
             if log_file_mapper.known( filename ):
-                logger.debug( f'Skipping already processed {filename}.')
+                logger.debug( 'Skipping already processed {}.'.format( filename ) )
                 self._stats[ 'files_skipped' ] += 1
                 continue
 
-            logger.debug( f'Processing {filename}.' )
+            logger.debug( 'Processing {}.'.format( filename ) )
             self._stats[ 'files_to_consume' ] += 1
 
             sample_rate = log_file_manager.sample_rate( filename,
@@ -116,8 +116,8 @@ class CentralNoticeConsumerController:
                 # get here, but we do a bit more.
                 if not event.valid:
                     invalid_lines += 1
-                    logger.debug(
-                        f'Invalid data on line {line_no} of {file.filename}: {line}' )
+                    logger.debug( 'Invalid data on line {} of {}: {}'.format(
+                        line_no, file.filename, line ) )
 
                     continue
 

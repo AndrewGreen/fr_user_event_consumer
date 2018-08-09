@@ -21,7 +21,7 @@ class CentralNoticeEvent:
         try:
             self._data = json.loads( json_string )
         except ValueError as e:
-            logger.debug( f'Invalid Json: {e}' )
+            logger.debug( 'Invalid Json: {}'.format( e ) )
             return
 
         self.bot = self._data[ 'userAgent' ][ 'is_bot' ]
@@ -32,27 +32,27 @@ class CentralNoticeEvent:
             self.country = country_mapper.get_or_new(
                 self._data[ 'event' ][ 'country' ] )
         except ValueError as e:
-            logger.debug( f'Invalid country: {e}' )
+            logger.debug( 'Invalid country: {}'.format( e ) )
             return
 
         try:
             self.language = language_mapper.get_or_new(
                 self._data[ 'event' ][ 'uselang' ] )
         except ValueError as e:
-            logger.debug( f'Invalid language: {e}' )
+            logger.debug( 'Invalid language: {}'.format( e ) )
             return
 
         try:
             self.project = project_mapper.get_or_new(
                 self._data[ 'event' ][ 'project' ] )
         except ValueError as e:
-            logger.debug( f'Invalid project: {e}' )
+            logger.debug( 'Invalid project: {}'.format( e ) )
             return
 
         if 'banner' in self._data[ 'event' ]:
             self.banner = self._data[ 'event' ][ 'banner' ]
             if not validate_banner_pattern.match( self.banner ):
-                logger.debug( f'Invalid banner: {self.banner}' )
+                logger.debug( 'Invalid banner: {}'.format( self.banner ) )
                 return
         else:
             self.banner = None
@@ -68,7 +68,7 @@ class CentralNoticeEvent:
         try:
             self.time = datetime.strptime( self._data[ 'dt' ], EVENT_TIMESTAMP_FORMAT )
         except ValueError as e:
-            logger.debug( f'Invalid timestamp: {e}' )
+            logger.debug( 'Invalid timestamp: {}'.format( e ) )
             return
 
         self.valid = True

@@ -113,7 +113,7 @@ class CNAggregationStep:
 
 
     def save( self ):
-        logger.debug( f'Aggregating {len(self._data)} cells' )
+        logger.debug( 'Aggregating {} cells'.format( len( self._data ) ) )
 
         cursor = db.connection.cursor()
 

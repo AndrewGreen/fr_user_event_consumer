@@ -11,10 +11,10 @@ def file_infos( timestamp_format, extract_timetamp_regex, directory, file_glob,
     from_time = None, to_time = None ):
 
     if not os.path.isdir( directory ):
-        raise ValueError( f'Not a directory: {directory}')
+        raise ValueError( 'Not a directory: {}'.format( directory ) )
 
     if os.path.dirname( file_glob ):
-        raise ValueError( f'file_glob can\'t include directory: {file_glob}' )
+        raise ValueError( 'file_glob can\'t include directory: {}'.format( file_glob ) )
 
     # Find subdirectories but don't follow symlinks, in case infinite recursion
     directories = [ x[0] for x in os.walk( directory, followlinks = False ) ]
@@ -39,7 +39,7 @@ def file_infos( timestamp_format, extract_timetamp_regex, directory, file_glob,
             # Duplicate filenames not allowed, regardless of directory
             if base_fn in filenames:
                 raise ValueError(
-                    f'Duplicate filename found: {base_fn} in {directory}' )
+                    'Duplicate filename found: {} in {}'.format( base_fn, directory ) )
 
             if ( from_time is not None ) and ( fn_time < from_time ):
                 continue
@@ -62,7 +62,7 @@ def sample_rate( filename, extract_sample_rate_regex ):
     sr = int( re.search( extract_sample_rate_regex, filename ).group( 0 ) )
 
     if ( sr <= 0 ) or ( sr > 100 ):
-        raise ValueError( f'Invalid sample rate {sr} for {filename}.' )
+        raise ValueError( 'Invalid sample rate {} for {}.'.format( sr, filename ) )
 
     return sr
 
