@@ -57,8 +57,8 @@ def new_unsaved( json_string ):
     return CentralNoticeEvent( json_string )
 
 
-def new_cn_aggregation_step( detail_languages, detail_projects_regex, sample_rate, file ):
-    return CNAggregationStep( detail_languages, detail_projects_regex, sample_rate, file )
+def new_cn_aggregation_step( detail_languages, detail_projects_regex, file ):
+    return CNAggregationStep( detail_languages, detail_projects_regex, file )
 
 
 def delete_with_processing_status():
@@ -101,10 +101,10 @@ def _data_cell_id( time, banner, campaign, project, language, country ):
 
 
 class CNAggregationStep:
-    def __init__( self, detail_languages, detail_projects_regex, sample_rate, file ):
+    def __init__( self, detail_languages, detail_projects_regex, file ):
         self._detail_languages = detail_languages
         self._detail_projects_pattern = re.compile( detail_projects_regex )
-        self._sample_rate_multiplier = 100 / sample_rate
+        self._sample_rate_multiplier = 100 / file.sample_rate
         self._file = file
         self._data = {}
 
