@@ -1,6 +1,6 @@
 import mysql.connector as mariadb
 
-from fr_user_event_consumer.log_file import LogFile, LogFileStatus
+from fr_user_event_consumer.log_file import LogFile
 from fr_user_event_consumer import db
 
 FILE_KNOWN_SQL = 'SELECT EXISTS (SELECT 1 FROM files WHERE filename = %s)'
@@ -48,12 +48,20 @@ UPDATE_FILE_SQL = (
 LATEST_TIME_SQL = 'SELECT timestamp FROM files ORDER BY timestamp DESC LIMIT 1'
 
 FILES_WITH_PROCESSING_STATUS_SQL = (
-    'SELECT EXISTS ( SELECT 1 FROM files WHERE status = \'processing\' LIMIT 1)' )
+    'SELECT EXISTS ('
+    '  SELECT 1 FROM files WHERE status = \'processing\' AND impressiontype = %s LIMIT 1'
+    ')'
+)
+
+DELETE_WITH_PROCESSING_STATUS_SQL = (
+    'DELETE FROM files WHERE status = \'processing\' AND  impressiontype = %s' )
 
 CACHE_KEY_PREFIX = 'LogFile'
 
 
 def known( filename ):
+    """Note: We don't include event type in the query; filenames must be unique across all
+    event types."""
     if db.object_in_cache( _make_cache_key( filename ) ):
         return True
 
@@ -150,17 +158,26 @@ def get_lastest_time():
     return row[0] if row else None
 
 
-def files_with_processing_status():
+def files_with_processing_status( event_type ):
     cursor = db.connection.cursor()
-    cursor.execute( FILES_WITH_PROCESSING_STATUS_SQL )
+    cursor.execute( FILES_WITH_PROCESSING_STATUS_SQL, ( event_type.legacy_key, ) )
     result = bool( cursor.fetchone()[ 0 ] )
     cursor.close()
     return result
 
 
-def load_file( filename ):
-    # stub
-    pass
+def delete_with_processing_status( event_type ):
+    cursor = db.connection.cursor()
+    try:
+        cursor.execute( DELETE_WITH_PROCESSING_STATUS_SQL, ( event_type.legacy_key, ) )
+    except mariadb.Error as e:
+        db.connection.rollback()
+        cursor.close()
+        raise e
+
+    db.connection.commit()
+    cursor.close()
+    return cursor.rowcount
 
 
 def _make_cache_key( filename ):

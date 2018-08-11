@@ -50,8 +50,12 @@ class CentralNoticeConsumerController:
         db.connect( **self._db_settings )
 
         # Check no files are in partially processed state
-        if log_file_mapper.files_with_processing_status():
-            raise RuntimeError( 'Files with processing status found.' )
+        if log_file_mapper.files_with_processing_status( EventType.CENTRAL_NOTICE ):
+            raise RuntimeError(
+                'Files with processing status found. A previous execution was probably '
+                'interrupted before completion. Back up the database and purge '
+                'data from incomplete processing.'
+            )
 
         # For from_latest option, get the most recent time of all consumed files
         if self._from_latest:
@@ -146,3 +150,19 @@ class CentralNoticeConsumerController:
 
         db.close()
 
+
+    def purge_incomplete( self ):
+        _logger.debug( 'Purging data and file records for files with processing status.' )
+        db.connect( **self._db_settings )
+
+        cell_count = central_notice_event_mapper.delete_with_processing_status()
+
+        _logger.debug( 'Removed {} data cells from files with processing status.'
+            .format( cell_count ) )
+
+        file_count = log_file_mapper.delete_with_processing_status(
+            EventType.CENTRAL_NOTICE )
+
+        _logger.debug( 'Removed {} files with processing status.'.format( file_count ) )
+
+        db.close()

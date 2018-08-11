@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import sys
 import argparse
 from datetime import datetime
 
@@ -89,15 +90,41 @@ if __name__ == '__main__':
         action = 'store_true'
     )
 
+    parser.add_argument(
+        '--purge-incomplete',
+        help =
+            """Delete from the database all data from events from files left in a state
+            of incomplete processing, and delete from the database references to those
+            files. This option should be used if a previous execution was interrupted.
+            Before using it, the database should be backed up.""",
+        dest = 'purge_incomplete',
+        action = 'store_true'
+    )
+
     args = parser.parse_args()
 
-    config.filename = args.config # None if the command-line option is not set
+    # Check --purge-incomplete usage
+    if args.purge_incomplete:
+        if (
+            ( args.directory is not None ) or
+            ( args.file_glob is not None ) or
+            ( args.from_latest is not False ) or
+            ( args.from_timestamp is not None ) or
+            ( args.to_timestamp is not None )
+        ):
+            parser.error(
+                '--purge-incomplete: not allowed with arguments --directory, --file-glob, '
+                '--from-latest, --from or --to.'
+            )
+
+    # Load config
+    config.filename = args.config # Will be None if the command-line option is not set
     cfg = config.get()
 
     setup_logging( args.debug )
 
-    # Parsing timestamp command line arguments should raise an error if they're not in
-    # the right format
+    # Parse timestamp command line arguments. This should raise an error if they're not in
+    # the right format.
     timestamp_format_in_fn = cfg[ 'timestamp_format_in_filenames' ]
 
     if args.from_timestamp:
@@ -124,4 +151,17 @@ if __name__ == '__main__':
         to_time = to_time
     )
 
-    controller.execute()
+    if args.purge_incomplete:
+        print(
+            'Purge database of events from files in a state of incomplete processing, '
+            'and purge records of those files. WARNING: Back up database before '
+            'executing this command.'
+        )
+
+        confirm = input( 'Proceed? [Y/n] ' )
+        if confirm != 'Y':
+            sys.exit()
+
+        controller.purge_incomplete()
+    else:
+        controller.execute()

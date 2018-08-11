@@ -30,6 +30,19 @@ INSERT_DATA_CELL_SQL = (
     ')'
 )
 
+DELETE_DATA_FORM_FILES_WITH_PROCESSING_STATUS_SQL = (
+    'DELETE'
+    '  bannerimpressions '
+    'FROM'
+    '  bannerimpressions '
+    'INNER JOIN'
+    '  files '
+    'ON'
+    '  bannerimpressions.file_id = files.id '
+    'WHERE'
+    '  files.status  = \'processing\''
+)
+
 # Strings for languages and projects not separated out, from legacy
 _OTHER_PROJECT_IDENTIFIER = 'other_project'
 _OTHER_LANGUAGE_CODE = 'other'
@@ -46,6 +59,20 @@ def new_unsaved( json_string ):
 
 def new_cn_aggregation_step( detail_languages, detail_projects_regex, sample_rate, file ):
     return CNAggregationStep( detail_languages, detail_projects_regex, sample_rate, file )
+
+
+def delete_with_processing_status():
+    cursor = db.connection.cursor()
+    try:
+        cursor.execute( DELETE_DATA_FORM_FILES_WITH_PROCESSING_STATUS_SQL )
+    except mariadb.Error as e:
+        db.connection.rollback()
+        cursor.close()
+        raise e
+
+    db.connection.commit()
+    cursor.close()
+    return cursor.rowcount
 
 
 def _get_other_project():
