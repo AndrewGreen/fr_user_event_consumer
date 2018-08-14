@@ -1,6 +1,6 @@
 import mysql.connector as mariadb
 
-from fr_user_event_consumer.proyect import Project
+from fr_user_event_consumer.project import Project
 from fr_user_event_consumer import db
 
 GET_PROJECT_SQL = 'SELECT id FROM project WHERE project = %s'

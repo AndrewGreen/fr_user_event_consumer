@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import datetime
 
-from fr_user_event_consumer.db import country_mapper, language_mapper, project_mapper
+from fr_user_event_consumer import country, project, language
 
 EVENT_TIMESTAMP_FORMAT = '%Y-%m-%dT%H:%M:%SZ' # Coordinate with EventLogging
 validate_banner_pattern = re.compile( '^[A-Za-z0-9_]+$' ) # Coordinate with CentralNotice
@@ -26,27 +26,18 @@ class CentralNoticeEvent:
 
         self.bot = self._data[ 'userAgent' ][ 'is_bot' ]
         self.testing = self._data[ 'event' ].get( 'testingBanner', False )
-        self.banner_shown = self._data[ 'event' ][ 'statusCode' ] == '6' # Sent as string
+        self.banner_shown = self._data[ 'event' ][ 'statusCode' ] == '6' # Received as string
 
-        try:
-            self.country = country_mapper.get_or_new(
-                self._data[ 'event' ][ 'country' ] )
-        except ValueError as e:
-            _logger.debug( 'Invalid country: {}'.format( e ) )
+        self.country_code = self._data[ 'event' ][ 'country' ]
+        if not country.is_valid_country_code( self.country_code ):
             return
 
-        try:
-            self.language = language_mapper.get_or_new(
-                self._data[ 'event' ][ 'uselang' ] )
-        except ValueError as e:
-            _logger.debug( 'Invalid language: {}'.format( e ) )
+        self.language_code = self._data[ 'event' ][ 'uselang' ]
+        if not language.is_valid_language_code( self.language_code ):
             return
 
-        try:
-            self.project = project_mapper.get_or_new(
-                self._data[ 'event' ][ 'db' ] )
-        except ValueError as e:
-            _logger.debug( 'Invalid project: {}'.format( e ) )
+        self.project_identifier = self._data[ 'event' ][ 'db' ]
+        if not project.is_valid_identifier( self.project_identifier ):
             return
 
         if 'banner' in self._data[ 'event' ]:

@@ -4,7 +4,7 @@ import logging
 import mysql.connector as mariadb
 
 from fr_user_event_consumer.central_notice_event import CentralNoticeEvent
-from fr_user_event_consumer.db import project_mapper, language_mapper
+from fr_user_event_consumer.db import project_mapper, language_mapper, country_mapper
 from fr_user_event_consumer import db
 
 INSERT_DATA_CELL_SQL = (
@@ -101,6 +101,7 @@ def _data_cell_id( time, banner, campaign, project, language, country ):
 
 
 class CNAggregationStep:
+
     def __init__( self, detail_languages, detail_projects_regex, file ):
         self._detail_languages = detail_languages
         self._detail_projects_pattern = re.compile( detail_projects_regex )
@@ -111,13 +112,13 @@ class CNAggregationStep:
 
     def add_event( self, event ):
         # Grouping less-common projects and languages
-        if self._detail_projects_pattern.match( event.project.identifier ):
-            project = event.project
+        if self._detail_projects_pattern.match( event.project_identifier ):
+            project = project_mapper.get_or_new( event.project_identifier )
         else:
             project = _get_other_project()
 
-        if event.language.language_code in self._detail_languages:
-            language = event.project
+        if event.language_code in self._detail_languages:
+            language = language_mapper.get_or_new( event.language_code )
         else:
             language = _get_other_language()
 
@@ -127,7 +128,7 @@ class CNAggregationStep:
 
         banner = event.banner
         campaign = event.campaign
-        country = event.country
+        country = country_mapper.get_or_new( event.country_code )
 
         cell_id = _data_cell_id( time, banner, campaign, project, language, country )
 
