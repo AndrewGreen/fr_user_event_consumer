@@ -5,7 +5,7 @@ class LogFileStatus( Enum ):
     CONSUMED = 'consumed'
 
 
-class LogFile():
+class LogFile:
 
     def __init__(
         self,
