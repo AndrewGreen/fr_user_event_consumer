@@ -1,5 +1,5 @@
 import mysql.connector as mariadb
-from . import log_file_mapper, central_notice_event_mapper, lookup_on_unique_column_helper
+from . import log_file_mapper, central_notice_event_aggregator, lookup_on_unique_column_helper
 
 connection = None
 _object_cache = {}

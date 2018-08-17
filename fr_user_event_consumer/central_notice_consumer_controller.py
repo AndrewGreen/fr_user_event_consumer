@@ -103,7 +103,7 @@ def purge_incomplete( db_settings ):
     _logger.debug( 'Purging data and file records for files with processing status.' )
     db.connect( **db_settings )
 
-    cell_count = db.central_notice_event_mapper.delete_with_processing_status()
+    cell_count = db.central_notice_event_aggregator.delete_with_processing_status()
 
     _logger.debug( 'Removed {} data cells from files with processing status.'
         .format( cell_count ) )
@@ -124,7 +124,7 @@ def _process_file( file, detail_languages, detail_projects_regex ):
         invalid_lines = 0
 
         # Start aggregation step (to aggregate data per-file)
-        aggregation_step = db.central_notice_event_mapper.new_cn_aggregation_step(
+        aggregation_step = db.central_notice_event_aggregator.new_cn_aggregation_step(
             detail_languages,
             detail_projects_regex,
             file
@@ -132,7 +132,7 @@ def _process_file( file, detail_languages, detail_projects_regex ):
 
         # Cycle through the lines in the file, create and aggregate the events
         for line, line_no in log_file_manager.lines( file ):
-            event = db.central_notice_event_mapper.new_unsaved( line )
+            event = db.central_notice_event_aggregator.new_unsaved( line )
 
             # Events arrive via a public URL. Some validation happens before they
             # get here, but we do a bit more.
