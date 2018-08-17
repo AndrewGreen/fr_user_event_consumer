@@ -58,6 +58,9 @@ def consume_events(
 
     stats[ 'consumed_files' ] = 0
     stats[ 'skipped_files' ] = 0
+    stats[ 'consumed_events' ] = 0
+    stats[ 'ignored_events' ] = 0
+    stats[ 'invalid_lines' ] = 0
 
     for file_info in file_infos:
         filename = file_info[ 'filename' ]
@@ -72,10 +75,6 @@ def consume_events(
         _logger.debug( 'Processing {}.'.format( filename ) )
 
         sample_rate = log_file_manager.sample_rate( filename, extract_sample_rate_regex )
-
-        stats[ 'consumed_events' ] = 0
-        stats[ 'ignored_events' ] = 0
-        stats[ 'invalid_lines' ] = 0
 
         # Create a new file object and insert it in the database
         file = db.log_file_mapper.new(
