@@ -83,14 +83,6 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
-        '--dry-run',
-        help =
-            """Read files and events, but do not write any data to the database. Instead,
-            output to stdout all SQL for insert, update or delete queries.""",
-        action = 'store_true'
-    )
-
-    parser.add_argument(
         '--purge-incomplete',
         help =
             """Delete from the database all data from events from files left in a state
