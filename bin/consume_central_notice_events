@@ -144,8 +144,8 @@ if __name__ == '__main__':
             'executing this command.'
         )
 
-        confirm = input( 'Proceed? [Y/n] ' )
-        if confirm != 'Y':
+        confirm = input( 'Proceed? [y/N] ' )
+        if confirm.strip() not in ( 'Y', 'y' ):
             sys.exit()
 
         central_notice_consumer_controller.purge_incomplete(
