@@ -13,15 +13,55 @@ if __name__ == '__main__':
     # Set up command-line arguments
     parser = argparse.ArgumentParser(
         description =
-            """Read CentralNotice event log files, aggregate them, and store them in a
-            database. Log filenames must be globally unique across all logs consumed by
-            fr_user_event_consumer scripts. Regardless of the options selected, events
-            will only be consumed from files that have not been marked as already
-            processed.
-            """
+            'Fundraising User Events Consumer (FRUEC)\n'
+            '========================================\n\n'
+            'Read log files containing JSON that describes user-facing events for\n'
+            'Wikimedia Fundraising. Store the events (possibly in aggregated form)\n'
+            'in a database.\n\n'
+            'Two commands are available (see below). For detailed help about the\n'
+            'options available for each, run: fruec [command] --help.\n\n'
+            'Notes: Log filenames must be globally unique across all types of logs\n'
+            'consumed by fr_user_event_consumer. Regardless of the options selected,\n'
+            'events will only be consumed from files that have not been marked as\n'
+            'already processed.',
+        formatter_class = argparse.RawTextHelpFormatter
     )
 
-    parser.add_argument(
+    # There are three global options available for both commands: --event-type,
+    # --config and --debug. However, we add those as specific arguments for each
+    # command, so that they may be placed after the command. Here we just set
+    # some variables for that common setup.
+    event_type_kwargs = {
+        'help': 'Type of event to consume. Options are: centralnotice, landingpages.',
+        'required': True
+    }
+
+    config_kwargs = {
+        'help': """Configuration file to use. (Without this option, the script looks for a
+            configuraiton file in the working directory and in
+            /etc/fr_user_event_consumer/.)"""
+    }
+
+    debug_kwargs = {
+        'help': 'Output debugging info to stderr.',
+        'action': 'store_true'
+
+    }
+
+    # There are two commands: 'consume' to consume log files, and 'purge-incomplete' to
+    # clean out data from partially processed files following an interrupted run.
+    commands = parser.add_subparsers( title = 'COMMANDS', dest = 'command' )
+    commands.required = True
+
+    # The main command, consume log files
+    consume_parser = commands.add_parser(
+        'consume',
+        help = 'Consume events from log files.'
+    )
+
+    consume_parser.add_argument( '-t', '--event-type', **event_type_kwargs )
+
+    consume_parser.add_argument(
         '-d',
         '--directory',
         help =
@@ -29,16 +69,17 @@ if __name__ == '__main__':
             consumed. (Defaults to the directory set in the configuration file.)"""
     )
 
-    parser.add_argument(
+    consume_parser.add_argument(
         '--file-glob',
         help =
             """Filename or glob to select log file(s) with events to consume. If not
             specified, defaults to central_notice_filename_glob set in the configuration
-            file. Filenames ending in '.gz' are assumed to be compressed with gzip.""",
-        dest = 'file_glob'
+            file. Filenames ending in '.gz' are assumed to be compressed with gzip."""
     )
 
-    since_grp = parser.add_mutually_exclusive_group()
+    # The two options to indicate the beginning of the time window for files to select
+    # are mutually exclusive.
+    since_grp = consume_parser.add_mutually_exclusive_group()
 
     since_grp.add_argument(
         '--from-latest-consumed',
@@ -46,8 +87,8 @@ if __name__ == '__main__':
             """Process files for times from the timestamp of most recent file consumed,
             inclusive. The last file processed will be included in the list to process,
             but it will be skipped. May not be used with the --from option.""",
-        action = 'store_true',
-        dest = 'from_latest'
+        dest = 'from_latest',
+        action = 'store_true'
     )
 
     since_grp.add_argument(
@@ -59,7 +100,7 @@ if __name__ == '__main__':
         dest = 'from_timestamp'
     )
 
-    parser.add_argument(
+    consume_parser.add_argument(
         '--to',
         help =
             """Process files with a timestamp equal to or earlier than this timestamp
@@ -67,47 +108,26 @@ if __name__ == '__main__':
         dest = 'to_timestamp'
     )
 
-    parser.add_argument(
-        '-c',
-        '--config',
-        help =
-            """Configuration file to use. (Without this option, the script looks for a
-            configuraiton file in the working directory and in
-            /etc/fr_user_event_consumer/.)"""
-    )
+    consume_parser.add_argument( '--config', **config_kwargs )
+    consume_parser.add_argument( '--debug', **debug_kwargs )
 
-    parser.add_argument(
-        '--debug',
-        help = 'Output debugging info to stderr.',
-        action = 'store_true'
-    )
-
-    parser.add_argument(
-        '--purge-incomplete',
+    # Purge incomplete command
+    purge_parser = commands.add_parser(
+        'purge-incomplete',
         help =
             """Delete from the database all data from events from files left in a state
             of incomplete processing, and delete from the database references to those
             files. This option should be used if a previous execution was interrupted.
-            Before using it, the database should be backed up.""",
-        dest = 'purge_incomplete',
-        action = 'store_true'
+            Before using it, the database should be backed up."""
     )
+
+    purge_parser.add_argument( '-t', '--event-type', **event_type_kwargs )
+    purge_parser.add_argument( '--config', **config_kwargs )
+    purge_parser.add_argument( '--debug', **debug_kwargs )
 
     args = parser.parse_args()
 
-    # Check --purge-incomplete usage
-    if args.purge_incomplete:
-        if (
-            ( args.directory is not None ) or
-            ( args.file_glob is not None ) or
-            ( args.from_latest is not False ) or
-            ( args.from_timestamp is not None ) or
-            ( args.to_timestamp is not None )
-        ):
-            parser.error(
-                '--purge-incomplete: not allowed with arguments --directory, --file-glob, '
-                '--from-latest, --from or --to.'
-            )
+    # Process arguments available across all commands
 
     # Load config
     config.filename = args.config # Will be None if the command-line option is not set
@@ -115,36 +135,22 @@ if __name__ == '__main__':
 
     setup_logging( args.debug )
 
-    # Parse timestamp command line arguments. This should raise an error if they're not in
-    # the right format.
-    timestamp_format_in_fn = cfg[ 'timestamp_format_in_filenames' ]
+    # Consume command
+    if args.command == 'consume':
+        # Parse timestamp command line arguments. This should raise an error if they're not in
+        # the right format.
+        timestamp_format_in_fn = cfg[ 'timestamp_format_in_filenames' ]
 
-    if args.from_timestamp:
-        from_time = datetime.strptime( args.from_timestamp, timestamp_format_in_fn )
-    else:
-        from_time = None
+        if args.from_timestamp:
+            from_time = datetime.strptime( args.from_timestamp, timestamp_format_in_fn )
+        else:
+            from_time = None
 
-    if args.to_timestamp:
-        to_time = datetime.strptime( args.to_timestamp, timestamp_format_in_fn )
-    else:
-        to_time = None
+        if args.to_timestamp:
+            to_time = datetime.strptime( args.to_timestamp, timestamp_format_in_fn )
+        else:
+            to_time = None
 
-    if args.purge_incomplete:
-        print(
-            'Purge database of events from files in a state of incomplete processing, '
-            'and purge records of those files. WARNING: Back up database before '
-            'executing this command.'
-        )
-
-        confirm = input( 'Proceed? [y/N] ' )
-        if confirm.strip() not in ( 'Y', 'y' ):
-            sys.exit()
-
-        central_notice_consumer_controller.purge_incomplete(
-            db_settings = cfg[ 'db_settings' ]
-        )
-
-    else:
         stats = central_notice_consumer_controller.consume_events(
             db_settings = cfg[ 'db_settings' ],
             timestamp_format_in_filenames = timestamp_format_in_fn,
@@ -166,3 +172,22 @@ if __name__ == '__main__':
         print( 'Events aggregated: {}'.format( stats[ 'consumed_events' ] ) )
         print( 'Events ignored: {}'.format( stats[ 'ignored_events' ] ) )
         print( 'Invalid events: {}'.format( stats[ 'invalid_lines' ] ) )
+
+    elif args.command == 'purge-incomplete':
+        print(
+            """Purge database of events from files in a state of incomplete processing,
+            and purge records of those files. WARNING: Back up database before
+            executing this command."""
+        )
+
+        confirm = input( 'Proceed? [y/N] ' )
+        if confirm.strip() not in ( 'Y', 'y' ):
+            sys.exit()
+
+        central_notice_consumer_controller.purge_incomplete(
+            db_settings = cfg[ 'db_settings' ]
+        )
+
+    else:
+        # Should never get here
+        raise ValueError( 'No valid command received' )
